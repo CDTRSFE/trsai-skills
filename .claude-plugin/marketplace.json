@@ -1,0 +1,35 @@
+{
+  "name": "trsai-skills",
+  "owner": {
+    "name": "TRS Team"
+  },
+  "metadata": {
+    "description": "TRS 前端团队开发规范与工作流技能集",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "trsai-skills",
+      "description": "TRS 前端团队开发规范与工作流技能集",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/ai-collaboration",
+        "./skills/api-integration",
+        "./skills/css-layout-patterns",
+        "./skills/css-style-conventions",
+        "./skills/form-validation",
+        "./skills/frontend-debugging",
+        "./skills/frontend-performance",
+        "./skills/git-tag-release",
+        "./skills/git-workflow",
+        "./skills/pinia-store-design",
+        "./skills/script-setup-structure",
+        "./skills/typescript-naming-conventions",
+        "./skills/vue-auto-imports",
+        "./skills/vue-component-design",
+        "./skills/vue-template-conventions"
+      ]
+    }
+  ]
+}
