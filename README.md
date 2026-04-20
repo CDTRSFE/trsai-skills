@@ -4,8 +4,16 @@ TRS 前端团队 Claude Code 技能集。覆盖开发规范、工作流、组件
 
 ## 安装
 
+安装到当前项目：
+
 ```bash
 npx skills add CDTRSFE/trsai-skills
+```
+
+全局安装（所有编辑器、所有项目均可用）：
+
+```bash
+npx skills add CDTRSFE/trsai-skills --global
 ```
 
 ## 技能列表
@@ -42,7 +50,17 @@ npx skills add CDTRSFE/trsai-skills
 
 ## 更新规范
 
-修改对应 `skills/<skill-name>/SKILL.md`，提交到 GitHub 后团队成员重新执行安装命令即可获取最新版本。
+**规范维护者**：修改对应 `skills/<skill-name>/SKILL.md`，提交推送到 GitHub：
+
+```bash
+git add . && git commit -m "feat: 更新xxx规范" && git push
+```
+
+**团队成员**：执行以下命令拉取最新版本（只更新本包，不影响其他 skills）：
+
+```bash
+npx skills update trsai-skills --global
+```
 
 ## 目录结构
 

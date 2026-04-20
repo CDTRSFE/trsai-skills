@@ -107,7 +107,7 @@ const statusMap: { [key: string]: string } = { ... }
 
 ```typescript
 // ✅ 类型只在类型位置使用，用 import type
-import type { UserInfo, OrderDetail } from '@/api/types'
+import type { UserInfo, OrderDetail } from '@/types/api'
 import type { ComponentPublicInstance } from 'vue'
 
 // ✅ 值和类型混用时，用普通 import（或 import { type X }）
@@ -115,7 +115,7 @@ import { defineStore } from 'pinia'
 import { ref, type Ref } from 'vue'
 
 // ❌ 把类型当值 import（会被打包进 bundle）
-import { UserInfo } from '@/api/types'   // UserInfo 只是个类型
+import { UserInfo } from '@/types/api'   // UserInfo 只是个类型
 ```
 
 ---
@@ -221,7 +221,7 @@ setTimeout(() => fetchData(), 1000)
 // ✅ import 顺序：第三方库 → 内部模块，同组按字母序
 import { message } from 'ant-design-vue'
 import debounce from 'lodash/debounce'
-import type { UserInfo } from '@/api/types/user'
+import type { UserInfo } from '@/types/user'
 import { useUserStore } from '@/stores/user'
 
 // ✅ 多行对象/数组/参数的最后一项加尾逗号

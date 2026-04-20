@@ -76,7 +76,7 @@ src/
 
 ```typescript
 // stores/user.ts
-import type { UserInfo, Permission } from '@/api/types/user'
+import type { UserInfo, Permission } from '@/types/user'
 
 export const useUserStore = defineStore('user', () => {
   // ① State —— 响应式数据

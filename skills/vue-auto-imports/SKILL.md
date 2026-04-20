@@ -123,11 +123,11 @@ import BaseButton from '@/components/BaseButton.vue'
 以下内容**不会自动导入**，必须手动写 import：
 
 ```typescript
-// 业务 API 层
-import { API_USER_LIST } from '@/api/user'
+// 业务请求封装（如果你们有抽公共 API 模块）
+import { getUserList } from './api'
 
 // 类型定义（必须用 import type）
-import type { UserInfo } from '@/api/types/user'
+import type { UserInfo } from './types'
 
 // lodash（按需引入）
 import debounce from 'lodash/debounce'
