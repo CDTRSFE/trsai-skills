@@ -126,7 +126,7 @@ git commit -m "fix(user): 修复用户状态切换后列表未刷新"
 ### 代码规范
 
 - [ ] 组件代码顺序正确（类型 → Props/Emits → 响应式 → computed → composable → 方法 → 生命周期）
-- [ ] 无多余 import（自动导入的 API 未手动引入）
+- [ ] 无多余 import（遵循 `vue-auto-imports`，自动导入的 API 不手动引入）
 - [ ] 路径使用 `@/` 别名
 - [ ] CSS 无 `!important`（业务代码）、无魔法 z-index
 
@@ -160,11 +160,11 @@ git commit -m "fix(user): 修复用户状态切换后列表未刷新"
 
 **逻辑正确性**
 - 边界条件是否处理（空数组、undefined、接口失败）
-- 异步操作是否有 loading 保护和 finally 兜底
+- 异步请求是否遵循 `api-integration`（loading 在 `finally` 中兜底）
 - 权限判断是否遗漏
 
 **规范符合性**
-- 是否违反 rules.md 中的规范（重点：自动导入、loading 位置、any 类型）
+- 是否违反团队规范（重点：`vue-auto-imports`、`api-integration`、`typescript-naming-conventions`）
 - 组件拆分是否合理（单组件是否过大）
 - 是否引入了不必要的依赖
 

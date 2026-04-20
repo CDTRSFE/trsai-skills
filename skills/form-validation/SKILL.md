@@ -315,5 +315,5 @@ async function handleSubmit() {
 - [ ] ❌ 提交前没有调用 `formRef.value?.validate()` → 用户绕过必填直接提交
 - [ ] ❌ 编辑回显用 `formState = data.data` 整体替换 → 用 `Object.assign`
 - [ ] ❌ 弹窗关闭后没有 `resetFields()` → 下次打开残留上次数据
-- [ ] ❌ loading 放在 then 里而不是 finally → 出错时按钮永远 loading
+- [ ] ❌ loading 位置不符合 `api-integration` → 出错时按钮永远 loading
 - [ ] ❌ 防重复提交只靠按钮 disabled → 补充 `if (submitting.value) return` 守卫

@@ -139,7 +139,7 @@ export const useAppStore = defineStore('app', {
 
 ## 四、异步 Action 规范
 
-Store 中的异步 action 与组件中的请求写法保持一致：
+Store 中的异步 action 与组件中的请求写法保持一致，遵循 `api-integration`：
 
 ```typescript
 // ✅ 标准异步 action
