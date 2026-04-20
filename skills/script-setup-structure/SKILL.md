@@ -165,7 +165,7 @@ const form = ref(null)
 const visible = defineModel<boolean>('open', { default: false })
 
 // 父组件使用
-// <user-modal v-model:open="showModal"></user-modal>
+// <UserModal v-model:open="showModal" />
 ```
 
 ---

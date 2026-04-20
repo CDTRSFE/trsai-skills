@@ -113,7 +113,7 @@ import { Button, Table, Modal } from 'ant-design-vue'
 import BaseButton from '@/components/BaseButton.vue'
 
 <!-- ✅ 直接使用 -->
-<base-button>点击</base-button>
+<BaseButton>点击</BaseButton>
 ```
 
 ---
