@@ -1,6 +1,6 @@
 ---
 name: css-layout-patterns
-description: CSS 布局与样式架构指导。在处理页面布局、响应式设计、常见 CSS 布局问题时使用。
+description: 在处理页面布局、响应式设计、常见 CSS 布局问题时使用。
 ---
 
 # CSS 布局与样式模式

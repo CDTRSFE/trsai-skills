@@ -1,6 +1,6 @@
 ---
 name: vue-component-design
-description: Vue 3 组件设计与架构指导。在设计新组件、重构组件、或讨论组件拆分策略时使用。
+description: 在设计新组件、重构组件、或讨论组件拆分策略时使用。
 ---
 
 # Vue 组件设计规范

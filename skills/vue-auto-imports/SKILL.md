@@ -1,6 +1,6 @@
 ---
 name: vue-auto-imports
-description: 项目自动导入白名单。生成代码时禁止手动 import 以下 API 和组件，它们已通过 unplugin-auto-import / unplugin-vue-components 自动注入。
+description: 在生成任何代码时使用，确保不手动 import 已通过 unplugin-auto-import / unplugin-vue-components 自动注入的 API 和组件。
 ---
 
 # 项目自动导入白名单

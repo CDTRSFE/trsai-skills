@@ -1,6 +1,6 @@
 ---
 name: frontend-debugging
-description: 前端系统化调试方法论。在排查 UI 渲染问题、状态异常、网络请求失败、样式错乱等前端 bug 时使用。
+description: 在排查 UI 渲染问题、状态异常、网络请求失败、样式错乱等前端 bug 时使用。
 ---
 
 # 前端系统化调试

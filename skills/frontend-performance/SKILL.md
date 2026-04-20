@@ -1,6 +1,6 @@
 ---
 name: frontend-performance
-description: 前端性能优化指导。在处理页面加载慢、渲染卡顿、打包体积大等性能问题时使用。
+description: 在处理页面加载慢、渲染卡顿、打包体积大等性能问题时使用。
 ---
 
 # 前端性能优化

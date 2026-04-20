@@ -1,6 +1,6 @@
 ---
 name: pinia-store-design
-description: Pinia 状态管理设计规范。在决定是否建 store、设计 store 结构、编写 actions/getters、以及跨组件状态共享时使用。
+description: 在决定是否建 store、设计 store 结构、编写 actions/getters、以及跨组件状态共享时使用。
 ---
 
 # Pinia 状态管理设计规范

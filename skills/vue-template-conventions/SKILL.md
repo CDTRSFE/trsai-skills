@@ -1,6 +1,6 @@
 ---
 name: vue-template-conventions
-description: Vue 模板（`<template>`）书写规范。在写或审查 Vue 组件模板时使用，涵盖组件标签格式、属性顺序、v-for/v-if 规则等。
+description: 在编写或审查 Vue 组件模板时使用，涵盖组件标签格式、属性顺序、v-for/v-if 规则等。
 ---
 
 # Vue 模板书写规范

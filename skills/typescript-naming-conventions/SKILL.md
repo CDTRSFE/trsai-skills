@@ -1,6 +1,6 @@
 ---
 name: typescript-naming-conventions
-description: TypeScript 命名规范与类型编写规范。在写新代码、做 Code Review、或修正命名/类型问题时使用。
+description: 在编写新代码、做 Code Review、或修正命名/类型问题时使用。
 ---
 
 # TypeScript 命名与类型规范

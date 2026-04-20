@@ -1,6 +1,6 @@
 ---
 name: git-workflow
-description: Git 分支管理与协作流程规范。在创建分支、提交代码、发起 MR/PR、Code Review、以及处理合并冲突时使用。
+description: 在创建分支、提交代码、发起 MR/PR、Code Review、以及处理合并冲突时使用。
 ---
 
 # Git 工作流规范

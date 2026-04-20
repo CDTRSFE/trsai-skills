@@ -1,6 +1,6 @@
 ---
 name: css-style-conventions
-description: CSS/Less 样式编写规范（非布局方案）。在写组件样式、处理 z-index、使用样式穿透、或做样式 Code Review 时使用。布局方案参考 css-layout-patterns。
+description: 在编写组件样式、处理 z-index、使用样式穿透、或做样式 Code Review 时使用。布局方案参考 css-layout-patterns。
 ---
 
 # CSS/Less 样式编写规范

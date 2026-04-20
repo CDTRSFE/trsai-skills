@@ -1,6 +1,6 @@
 ---
 name: git-tag-release
-description: Use when the user asks to 推 tag、打 tag、发版、推一个 rc 的 tag、生成下一个 patch/minor/major/RC tag，尤其是在仓库通过 `package.json.tagPrefix` 管理 tag 前缀，并且可能需要回写 `package.json.tag`、commit `package.json`、创建并推送 tag 到 remote 时。
+description: 在打 tag、发版、推 RC tag、生成下一个 patch/minor/major 版本号，或需要回写 package.json tag 字段并推送到远端时使用。
 ---
 
 # Git Tag Release

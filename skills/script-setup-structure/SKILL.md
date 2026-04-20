@@ -1,6 +1,6 @@
 ---
 name: script-setup-structure
-description: Vue `<script setup lang="ts">` 内部代码组织规范。在写新组件或重构组件 script 部分时使用，涵盖代码块顺序、Props/Emits 定义、响应式类型等。
+description: 在编写新组件或重构组件 script 部分时使用，涵盖代码块顺序、Props/Emits 定义、响应式类型等规范。
 ---
 
 # `<script setup>` 代码组织规范

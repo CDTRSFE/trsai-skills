@@ -1,6 +1,6 @@
 ---
 name: api-integration
-description: 前端 API 集成模式。在封装 HTTP 请求、设计 API 层、处理请求错误和加载状态时使用。
+description: 在封装 HTTP 请求、设计 API 层、处理请求错误和加载状态时使用。
 ---
 
 # 前端 API 集成模式

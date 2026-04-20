@@ -1,6 +1,6 @@
 ---
 name: form-validation
-description: 表单验证与处理规范。在实现新增/编辑表单、处理表单提交、设计校验规则时使用。覆盖 Ant Design Vue（PC）和 Vant（移动端 H5）两套场景。
+description: 在实现新增/编辑表单、处理表单提交、设计校验规则时使用。覆盖 Ant Design Vue（PC）和 Vant（移动端 H5）两套场景。
 ---
 
 # 表单验证与处理规范
