@@ -131,8 +131,8 @@ function execute(options) {
     if (runGit(['status', '--porcelain', '--', 'package.json'], context.cwd).trim()) {
       runGit(['add', 'package.json'], context.cwd);
       performed.push('git add package.json');
-      runGit(['commit', '-m', 'build: update package.json#tag', '--no-verify'], context.cwd);
-      performed.push("git commit -m 'build: update package.json#tag' --no-verify");
+      runGit(['commit', '-m', 'chore(release): update package.json#tag', '--no-verify'], context.cwd);
+      performed.push("git commit -m 'chore(release): update package.json#tag' --no-verify");
     } else {
       performed.push('Skipped package.json commit because there was no diff');
     }
@@ -270,7 +270,7 @@ function buildActions(context) {
   if (context.editPkg) {
     actions.push('Update package.json#tag');
     actions.push('git add package.json');
-    actions.push("git commit -m 'build: update package.json#tag' --no-verify");
+    actions.push("git commit -m 'chore(release): update package.json#tag' --no-verify");
   }
 
   actions.push(`git tag ${context.finalTag}`);

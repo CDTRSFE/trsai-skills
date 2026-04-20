@@ -66,7 +66,7 @@ fix(login): 修复登录后跳转路径错误
 refactor(order): 将订单逻辑提取为 composable
 perf(table): 大列表改用虚拟滚动
 style(home): 修复按钮间距不一致
-chore: 升级 vite 至 5.x
+chore(deps): 升级 vite 至 5.x
 docs: 补充组件 props 注释
 ```
 
@@ -77,11 +77,12 @@ docs: 补充组件 props 注释
 | `feat` | 新功能 | minor ↑ |
 | `fix` | Bug 修复 | patch ↑ |
 | `perf` | 性能优化 | patch ↑ |
+| `build` | 构建产物 / 构建流程 | 不影响 |
 | `refactor` | 重构（不改功能） | 不影响 |
 | `style` | 格式/样式（不改逻辑） | 不影响 |
 | `docs` | 文档 | 不影响 |
 | `test` | 测试 | 不影响 |
-| `chore` | 构建/依赖/配置 | 不影响 |
+| `chore` | 依赖/配置/杂项维护 | 不影响 |
 
 ### 提交前检查
 

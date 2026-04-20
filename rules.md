@@ -50,7 +50,7 @@
   7. 生命周期钩子
 
 ## 模板规范
-- **组件使用**: 模板中必须用 kebab-case，例如 `<my-component></my-component>`，禁止自闭合或大驼峰形式。
+- **组件使用**: 模板中组件必须用 PascalCase，例如 `<MyComponent></MyComponent>`，且禁止自闭合。
 - **自闭合**: 普通 HTML 元素和组件不允许自闭合；void 元素（`<br>`、`<img>`、`<input>` 等）始终自闭合。
 - **属性顺序**: 指令（v-model/v-if 等）→ class → 其他属性 → 事件（@xxx）。
   ```vue
@@ -117,7 +117,7 @@
 - 提交前删除所有 `console.log`。
 - 路径始终用 `@/` 别名，禁止 `../../../` 长相对路径。
 - **Git 提交**: 遵循 Conventional Commits，例如 `feat: 新增筛选功能`、`fix: 修复分页问题`。
-  类型：`feat` | `fix` | `docs` | `style` | `refactor` | `perf` | `test` | `chore`
+  类型：`feat` | `fix` | `docs` | `style` | `refactor` | `perf` | `test` | `build` | `chore`
 
 ## 图片规范
 - 图片提交前必须压缩（推荐 tinypng.com）。

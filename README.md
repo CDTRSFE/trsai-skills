@@ -8,8 +8,6 @@ TRS 前端团队 Claude Code 技能集。覆盖开发规范、工作流、组件
 npx skills add CDTRSFE/trsai-skills
 ```
 
-> 将 `your-org` 替换为实际 GitHub 组织/用户名。
-
 ## 技能列表
 
 | 技能 | 触发场景 |

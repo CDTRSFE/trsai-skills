@@ -80,7 +80,7 @@ interface Props {
 
 ```typescript
 // ❌ 多个 Boolean 让调用方困惑
-<MyTable :bordered :striped :compact :hoverable />
+<MyTable :bordered :striped :compact :hoverable></MyTable>
 
 // ✅ 使用具名对象或联合类型
 interface Props {
@@ -93,7 +93,7 @@ interface Props {
 
 ```vue
 <!-- 父组件 -->
-<SearchPanel v-model:keyword="keyword" v-model:filters="filters" />
+<SearchPanel v-model:keyword="keyword" v-model:filters="filters"></SearchPanel>
 
 <!-- 子组件 SearchPanel.vue -->
 <script setup lang="ts">

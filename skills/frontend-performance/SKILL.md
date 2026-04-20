@@ -66,8 +66,6 @@ import UserList from '@/views/UserList.vue'
 
 ```vue
 <script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
-
 // ✅ 重型组件异步加载
 const HeavyChart = defineAsyncComponent(() =>
   import('@/components/HeavyChart.vue')
@@ -82,7 +80,7 @@ const RichTextEditor = defineAsyncComponent({
 </script>
 
 <template>
-  <HeavyChart v-if="showChart" :data="chartData" />
+  <HeavyChart v-if="showChart" :data="chartData"></HeavyChart>
 </template>
 ```
 
@@ -128,8 +126,6 @@ const { y: scrollY } = useScroll(window) // VueUse 内置节流
 <!-- 大列表（> 100 项）使用虚拟滚动 -->
 <script setup lang="ts">
 // 使用 @vueuse/components 或 vue-virtual-scroller
-import { useVirtualList } from '@vueuse/core'
-
 const { list: virtualList, containerProps, wrapperProps } =
   useVirtualList(allItems, {
     itemHeight: 48,
@@ -173,7 +169,7 @@ const filteredList = computed(() =>
 
 <!-- ✅ v-memo：条件缓存 -->
 <div v-for="item in list" :key="item.id" v-memo="[item.id, item.status]">
-  <ExpensiveComponent :item="item" />
+  <ExpensiveComponent :item="item"></ExpensiveComponent>
 </div>
 
 <!-- ✅ shallowRef：大对象列表不需要深层响应式 -->
