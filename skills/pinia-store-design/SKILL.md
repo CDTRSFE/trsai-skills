@@ -64,7 +64,7 @@ src/
 ```
 
 **命名规范**：
-- 文件名：camelCase，例如 `userInfo.ts`
+- 文件名：camelCase，例如 `user.ts`、`userInfo.ts`
 - Store ID：与文件名一致的 kebab-case 字符串，例如 `'user-info'`
 - 导出函数：`use` + PascalCase，例如 `useUserStore`
 
@@ -82,7 +82,7 @@ export const useUserStore = defineStore('user', () => {
   // ① State —— 响应式数据
   const userInfo = ref<UserInfo | null>(null)
   const permissions = ref<string[]>([])
-  const token = ref(localStorage.getItem('token') ?? '')
+  const token = useStorage('token', '')
 
   // ② Getters —— 派生数据
   const isLoggedIn = computed(() => !!token.value)
@@ -102,7 +102,6 @@ export const useUserStore = defineStore('user', () => {
     userInfo.value = null
     permissions.value = []
     token.value = ''
-    localStorage.removeItem('token')
   }
 
   return {

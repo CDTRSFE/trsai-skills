@@ -144,9 +144,11 @@ const fetchDetail = async (id: string) => { ... }
 Ref 引用必须加 `Ref` 后缀：
 
 ```typescript
+import type { FormInstance } from 'ant-design-vue'
+
 // ✅ 加 Ref 后缀
 const chartRef = ref<HTMLDivElement | null>(null)
-const formRef = ref<InstanceType<typeof Form> | null>(null)
+const formRef = ref<FormInstance | null>(null)
 const tableRef = ref(null)
 
 // ❌ 没有后缀，与普通数据混淆

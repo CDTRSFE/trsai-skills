@@ -240,7 +240,7 @@ function getLabel() {
 }
 
 // ✅ 通用规范
-import { isArray } from '@/utils'           // 用 Array.isArray()，不用 instanceof Array
+Array.isArray(value)                        // 用 Array.isArray()，不用 instanceof Array
 path.startsWith('@/')                        // 路径始终用 @/ 别名
 import debounce from 'lodash/debounce'      // lodash 按需引入
 ```

@@ -26,6 +26,8 @@ description: 在实现新增/编辑表单、处理表单提交、设计校验规
 
 ```vue
 <script setup lang="ts">
+import type { FormInstance } from 'ant-design-vue'
+
 interface FormState {
   name: string
   roleId: number | undefined
@@ -42,7 +44,7 @@ const formState = reactive<FormState>({
 })
 
 // 表单实例引用（用于触发校验）
-const formRef = ref<InstanceType<typeof Form> | null>(null)
+const formRef = ref<FormInstance | null>(null)
 
 // 校验规则（集中定义，不写在模板里）
 const rules = {
@@ -83,8 +85,8 @@ function handleReset() {
     ref="formRef"
     :model="formState"
     :rules="rules"
-    label-col="{ span: 6 }"
-    wrapper-col="{ span: 16 }"
+    :label-col="{ span: 6 }"
+    :wrapper-col="{ span: 16 }"
     @finish="handleSubmit"
   >
     <a-form-item label="姓名" name="name">
@@ -106,7 +108,7 @@ function handleReset() {
       </a-radio-group>
     </a-form-item>
 
-    <a-form-item wrapper-col="{ offset: 6 }">
+    <a-form-item :wrapper-col="{ offset: 6 }">
       <a-button type="primary" html-type="submit" :loading="submitting">提交</a-button>
       <a-button class="ml-2" @click="handleReset">重置</a-button>
     </a-form-item>
@@ -228,14 +230,16 @@ const rules = {
 
 ```vue
 <script setup lang="ts">
-const formRef = ref<InstanceType<typeof Form> | null>(null)
+import type { FormInstance } from 'vant'
+
+const formRef = ref<FormInstance | null>(null)
 
 const formState = reactive({
   name: '',
   phone: '',
 })
 
-// Vant 校验规则格式不同，直接写在 a-field 上
+// Vant 校验规则格式不同，直接写在 van-field 上
 async function handleSubmit() {
   await formRef.value?.validate()
   // 提交逻辑...
