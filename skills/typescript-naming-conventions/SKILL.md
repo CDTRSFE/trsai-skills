@@ -5,7 +5,9 @@ description: 在编写新代码、做 Code Review、或修正命名/类型问题
 
 # TypeScript 命名与类型规范
 
-## 命名规范速查
+## Code Review Checklist
+
+### 命名规范速查
 
 | 类型 | 规则 | 示例 |
 |------|------|------|
@@ -23,7 +25,7 @@ description: 在编写新代码、做 Code Review、或修正命名/类型问题
 
 ---
 
-## Interface 规范
+### Interface 规范
 
 ```typescript
 // ✅ PascalCase，不加 I 前缀
@@ -43,7 +45,7 @@ interface IUserInfo { ... }
 interface IPageResult<T> { ... }
 ```
 
-### interface vs type
+#### interface vs type
 
 **优先用 `interface`，type 仅用于联合类型、工具类型等 interface 无法表达的场景：**
 
@@ -62,7 +64,7 @@ type UserInfo = { id: string; name: string }
 
 ---
 
-## 避免 any
+### 避免 any
 
 ```typescript
 // ❌ 禁止裸用 any
@@ -84,7 +86,7 @@ const legacyData: any = parseLegacyFormat(raw)
 
 ---
 
-## 索引类型
+### 索引类型
 
 ```typescript
 // ✅ 用 Record<K, V>
@@ -101,7 +103,7 @@ const statusMap: { [key: string]: string } = { ... }
 
 ---
 
-## import type
+### import type
 
 仅用于类型的符号必须用 `import type`：
 
@@ -120,7 +122,7 @@ import { UserInfo } from '@/types/api'   // UserInfo 只是个类型
 
 ---
 
-## ts-ignore / ts-expect-error
+### ts-ignore / ts-expect-error
 
 ```typescript
 // ✅ 用 @ts-expect-error，附说明注释
@@ -134,7 +136,7 @@ doSomething()
 
 ---
 
-## 安全访问
+### 安全访问
 
 ```typescript
 // ✅ 可选链（?.）和空值合并（??）
@@ -149,7 +151,7 @@ const list = response.data.list
 
 ---
 
-## 严格相等
+### 严格相等
 
 ```typescript
 // ✅ 始终用 ===
@@ -164,9 +166,9 @@ if (value == null) { ... }   // 本意可能是 null 或 undefined
 
 ---
 
-## JS / ES6+ 编码规范
+### JS / ES6+ 编码规范
 
-### 模板字面量（禁止字符串拼接）
+#### 模板字面量（禁止字符串拼接）
 
 ```typescript
 // ✅ 模板字面量
@@ -178,7 +180,7 @@ const url = '/api/user/' + userId
 const msg = '欢迎，' + userName + '！您有 ' + count + ' 条消息'
 ```
 
-### 对象简写
+#### 对象简写
 
 ```typescript
 // ✅ ES6 简写
@@ -189,7 +191,7 @@ const user = { name, age: 18, greet() { return `Hi, ${this.name}` } }
 const user = { name: name, greet: function() { ... } }
 ```
 
-### 数组方法
+#### 数组方法
 
 ```typescript
 // ✅ 精确语义
@@ -205,7 +207,7 @@ const flat = [].concat(...nestedList)
 const hasHttp = /^http/.test(url)
 ```
 
-### 其他规范
+#### 其他规范
 
 ```typescript
 // ✅ 剩余参数
