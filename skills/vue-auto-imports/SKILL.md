@@ -48,21 +48,22 @@ const route = useRoute()
 
 ---
 
-## Pinia（自动导入）
+## Pinia（当前需手动 import）
 
 ```typescript
-// ❌ 禁止
+// ✅ 当前需手动 import（以项目实际配置为准）
 import { defineStore, storeToRefs } from 'pinia'
 
-// ✅ 直接使用
-export const useUserStore = defineStore('user', () => { ... })
+export const useUserStore = defineStore('user', () => {
+  return { }
+})
 ```
 
 ---
 
-## VueUse（常用 API 已自动导入）
+## VueUse（当前需手动 import）
 
-直接使用，无需 import：
+需要使用时自行 import（以项目实际配置为准）：
 
 - `useStorage`、`useDark`、`useToggle`
 - `useEventListener`、`useResizeObserver`、`useMutationObserver`
@@ -150,6 +151,4 @@ import { useUserStore } from '@/stores/user'
 // ❌ 以下都是多余的 import，删掉
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { defineStore } from 'pinia'
-import { useStorage } from '@vueuse/core'
 ```

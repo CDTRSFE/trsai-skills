@@ -32,6 +32,12 @@ description: 在决定是否建 store、设计 store 结构、编写 actions/get
          └── 否（跨层级、跨路由）→ 放 Pinia Store
 ```
 
+当共享范围、组件关系、生命周期不明确时，不要猜，先补齐信息：
+
+- 需要共享到哪些组件/页面？是否跨路由？
+- 这些组件是否父子关系，是否能用 Props/Emits 或 provide/inject 传递？
+- 刷新后是否需要保留（持久化）？
+
 ### 适合放 Store 的状态
 
 | 场景 | 示例 |
