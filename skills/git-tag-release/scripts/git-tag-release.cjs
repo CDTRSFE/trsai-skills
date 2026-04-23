@@ -65,8 +65,8 @@ function printHelp() {
 git-tag-release
 
 Usage:
-  node scripts/git-tag-release.js preview --cwd /repo [options]
-  node scripts/git-tag-release.js execute --cwd /repo [options]
+  node scripts/git-tag-release.cjs preview --cwd /repo [options]
+  node scripts/git-tag-release.cjs execute --cwd /repo [options]
 
 Options:
   --cwd <path>            Target repository path. Defaults to current directory.

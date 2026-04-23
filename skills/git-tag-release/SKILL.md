@@ -21,7 +21,18 @@ description: 在打 tag、发版、推 RC tag、生成下一个 patch/minor/majo
 
 ## Bundled Script
 
-使用 `scripts/git-tag-release.js`，不要手写一整串 git 命令。
+使用 skill 自身目录里的 `scripts/git-tag-release.cjs`，不要手写一整串 git 命令。
+
+不要在 bash 里写相对路径 `node scripts/git-tag-release.cjs ...`。
+
+原因：命令通常会在目标仓库目录执行，相对路径会指向当前仓库的 `scripts/`，而不是 skill 目录本身。无论 skill 安装在项目本地还是全局目录，都必须先从当前已加载的 skill 元信息里拿到 `Base directory for this skill`，将其中的 `file://` 路径转换为本地绝对路径，再执行脚本。
+
+示意：
+
+```text
+Base directory for this skill: file:///Users/name/.agents/skills/git-tag-release
+=> 本地脚本绝对路径: /Users/name/.agents/skills/git-tag-release/scripts/git-tag-release.cjs
+```
 
 它有两个子命令：
 
@@ -56,7 +67,7 @@ description: 在打 tag、发版、推 RC tag、生成下一个 patch/minor/majo
 ### 2. 运行预览
 
 ```bash
-node scripts/git-tag-release.js preview --cwd /path/to/repo --remote origin --prefix v- --version-type RC --suffix "" --edit-pkg true --json
+node "/absolute/path/to/git-tag-release/scripts/git-tag-release.cjs" preview --cwd /path/to/repo --remote origin --prefix v- --version-type RC --suffix "" --edit-pkg true --json
 ```
 
 预览结果里重点看：
@@ -97,7 +108,7 @@ node scripts/git-tag-release.js preview --cwd /path/to/repo --remote origin --pr
 将预览产出的 `finalTag` 作为 `--tag` 传给执行脚本：
 
 ```bash
-node scripts/git-tag-release.js execute --cwd /path/to/repo --remote origin --tag "v-1.2.3-RC-20260417153045" --edit-pkg true --json
+node "/absolute/path/to/git-tag-release/scripts/git-tag-release.cjs" execute --cwd /path/to/repo --remote origin --tag "v-1.2.3-RC-20260417153045" --edit-pkg true --json
 ```
 
 这样执行时不会重新生成另一个 RC 时间戳。
