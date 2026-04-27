@@ -16,19 +16,12 @@
       "skills": [
         "./skills/ai-collaboration",
         "./skills/api-integration",
-        "./skills/css-layout-patterns",
-        "./skills/css-style-conventions",
+        "./skills/css-patterns",
         "./skills/form-validation",
-        "./skills/frontend-debugging",
-        "./skills/frontend-performance",
         "./skills/git-tag-release",
-        "./skills/git-workflow",
         "./skills/pinia-store-design",
-        "./skills/script-setup-structure",
-        "./skills/typescript-naming-conventions",
-        "./skills/vue-auto-imports",
         "./skills/vue-component-design",
-        "./skills/vue-template-conventions"
+        "./skills/trs-code-review"
       ]
     }
   ]
