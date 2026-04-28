@@ -1,47 +1,68 @@
 # trsai-skills
 
-TRS 前端团队 AI 技能集。脚手架项目已内置 ESLint、stylelint、Prettier 和 commit 阶段校验，因此本仓库只保留 AI 真正需要的判断型、工具型和 Review 型技能。
+TRS 前端团队 AI 规则与技能集。脚手架项目已内置 ESLint、stylelint、Prettier 和 commit 阶段校验，本仓库只保留 AI 每次都应遵守的短规则，以及需要上下文判断或工具执行的条件技能。
 
-## 三层模型
+## 文件分工
 
-| 层级 | 位置 | 用途 |
-|------|------|------|
-| 常驻规范 | `AGENTS.md` | Codex 每次默认遵守的短规则，避免把基础规范都做成 skill |
-| 条件技能 | `skills/*/SKILL.md` | 特定场景才触发，例如需求信息清单、接口、表单、Pinia、组件设计、发版 |
-| 参考文档 | `docs/conventions/*` | 被脚手架 lint/stylelint/commit 校验覆盖的团队规范参考 |
-| 收尾审查 | `skills/trs-code-review/SKILL.md` | 用户要求 review、提交前检查、MR/PR 前检查或完成验收时使用 |
+| 位置 | 用途 |
+|------|------|
+| `AGENTS.md` | Codex 常驻项目规范，放短规则 |
+| `CLAUDE.md` | Claude Code 项目记忆入口，通过 `@AGENTS.md` 复用同一套规则 |
+| `skills/*/SKILL.md` | 条件触发技能，处理需求澄清、接口、表单、Store、组件、样式、发版和 Review |
+| `docs/conventions/*` | 团队规范参考，基础格式和风格优先交给脚手架校验 |
+| `.codex-plugin/plugin.json` | Codex 插件声明，技能目录指向 `./skills/` |
+| `.claude-plugin/marketplace.json` | Claude skills 安装声明 |
 
-## 适用工具
+## Claude Code 使用
 
-| 工具 | 入口文件 | 说明 |
-|------|---------|------|
-| Claude | `.claude-plugin/marketplace.json` | 兼容 Claude skills 安装方式 |
-| Codex | `.codex-plugin/plugin.json` | Codex 插件声明，技能目录指向 `./skills/` |
-| Superpowers | Codex 已安装的 Superpowers 插件 | 负责规划、TDD、系统调试、验证等过程规范 |
+Claude Code 读取当前项目的 `CLAUDE.md`，不会直接读取 `AGENTS.md`。推荐做法：
 
-## 安装
-
-### Claude / skills CLI
-
-```bash
-npx skills add CDTRSFE/trsai-skills
-```
-
-全局安装：
+1. 在当前要开发的业务项目中打开 Claude Code，不要把 `trsai-skills` 当作业务项目打开。
+2. 安装本仓库 skills：
 
 ```bash
 npx skills add CDTRSFE/trsai-skills --global
 ```
 
-### Codex
+3. 业务项目如已有 `AGENTS.md`，在项目根目录放一个很薄的 `CLAUDE.md`：
 
-本仓库已提供 Codex 插件入口：
+```md
+@AGENTS.md
 
-```text
-.codex-plugin/plugin.json
+## Claude Code 补充
+
+- 通用规则维护在 `AGENTS.md`，Claude Code 通过本文件导入。
 ```
 
-如果 Codex 环境支持本地插件源，可直接把本仓库作为本地插件加载；如使用 marketplace，则让 source 指向本仓库路径。
+4. Claude 专属补充才写在 `CLAUDE.md`；通用团队规则优先维护在 `AGENTS.md`。
+
+## Codex 使用
+
+Codex CLI / App 默认读取 `AGENTS.md`。推荐做法：
+
+1. 把团队通用规则放到 Codex 全局配置，一台电脑做一次即可：
+
+```bash
+mkdir -p ~/.codex
+cp /path/to/trsai-skills/AGENTS.md ~/.codex/AGENTS.md
+```
+
+2. 在当前要开发的业务项目中打开 Codex CLI 或 Codex App。
+3. 业务项目特殊规则写在该项目根目录的 `AGENTS.md`；子目录强约束可用 `AGENTS.override.md`。
+4. 如 Codex 环境支持本地插件源，可加载本仓库的 `.codex-plugin/plugin.json`，技能目录已指向 `./skills/`。
+
+验证是否读取规则，可直接问：
+
+```text
+请总结当前加载的 AGENTS.md 项目规范，并说明你会如何处理验证。
+```
+
+## Agent 与 Skill 分工
+
+- `AGENTS.md` / `CLAUDE.md`：常驻短规则，每次都应遵守。
+- `skills/*/SKILL.md`：特定场景才触发，避免把基础格式、命名、模板细节都做成 skill。
+- Superpowers：负责规划、TDD、系统调试、验证、请求代码审查等流程纪律。
+- TRS skills：负责团队领域规范、前端实现判断、发版工具和收尾审查。
 
 ## 技能列表
 
@@ -56,32 +77,7 @@ npx skills add CDTRSFE/trsai-skills --global
 | `vue-component-design` | 设计新组件、重构组件、组件拆分策略 |
 | `trs-code-review` | TRS 前端代码审查、提交前检查、MR/PR 前检查、完成验收 |
 
-## 已降级为文档/工具校验的内容
-
-这些内容不再单独做 skill：
-
-| 原内容 | 现在位置 | 原因 |
-|------|---------|------|
-| `<script setup>` 顺序、模板格式、自动导入 | `AGENTS.md`、`docs/conventions/vue.md` | 属于常驻规则或 lint 可检查 |
-| TypeScript 命名与类型基础规范 | `AGENTS.md`、`docs/conventions/typescript.md` | 属于基础规范，脚手架已校验大部分问题 |
-| CSS/Less 书写细节 | `docs/conventions/style.md`、`css-patterns` | 格式交给 stylelint，判断型样式问题保留 skill |
-| Git 提交/MR 基础规范 | `docs/conventions/git.md` | commit 阶段已有团队校验 |
-| 通用调试/性能流程 | `docs/conventions/debugging-performance.md`、Superpowers | 系统流程由 Superpowers 负责 |
-
-## 与 Superpowers 结合
-
-建议把 TRS skills 定位为「团队领域规范」，把 Superpowers 定位为「执行流程规范」。
-
-| 开发阶段 | TRS 技能 | Superpowers |
-|---------|---------|-------------|
-| 需求不清晰 | `ai-collaboration` 补齐 TRS 前端信息 | `superpowers:brainstorming` |
-| 输出实现方案 | 相关业务/前端技能 | `superpowers:writing-plans` |
-| 新功能 / Bugfix | 相关业务/前端技能 | `superpowers:test-driven-development` |
-| 问题排查 | 参考 `docs/conventions/debugging-performance.md` | `superpowers:systematic-debugging` |
-| 完成验收 | `trs-code-review` | `superpowers:verification-before-completion`、`superpowers:requesting-code-review` |
-| 发版 | `git-tag-release` | `superpowers:verification-before-completion` |
-
-推荐提示词：
+## 推荐提示词
 
 ```text
 分析这个需求，结合 Superpowers 的规划/验证流程，并按 TRS 前端技能规范给出实现方案。
@@ -91,23 +87,16 @@ npx skills add CDTRSFE/trsai-skills --global
 请用 TRS Code Review 检查本次改动，并说明验证情况。
 ```
 
-更多说明见 `docs/superpowers-codex.md`。
+Superpowers 结合方式见 `docs/superpowers-codex.md`。
 
 ## 更新规范
 
-**规范维护者**：
-
 - 每次都要遵守的短规则：改 `AGENTS.md`。
-- 特定场景能力：改 `skills/<skill-name>/SKILL.md`。
+- Claude Code 入口或专属补充：改 `CLAUDE.md`。
+- 特定场景技能：改 `skills/<skill-name>/SKILL.md`。
 - 可被 lint/stylelint/commit 校验覆盖的规范：改 `docs/conventions/*` 或脚手架规则。
-
-提交推送：
-
-```bash
-git add . && git commit -m "feat: 更新xxx规范" && git push
-```
-
-**团队成员**：
+- Codex 插件元信息：改 `.codex-plugin/plugin.json`。
+- Claude skills 安装声明：改 `.claude-plugin/marketplace.json`。
 
 ```bash
 npx skills update trsai-skills --global
@@ -117,10 +106,12 @@ npx skills update trsai-skills --global
 
 ```text
 AGENTS.md                 ← Codex 常驻项目规范
+CLAUDE.md                 ← Claude Code 项目记忆入口，导入 AGENTS.md
 skills/
   <skill-name>/
     SKILL.md              ← 条件触发技能
-docs/conventions/         ← 团队规范参考文档
+docs/
+  conventions/            ← 团队规范参考文档
 .codex-plugin/
   plugin.json             ← Codex 插件声明
 .claude-plugin/
