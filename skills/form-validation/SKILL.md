@@ -9,7 +9,7 @@ description: 在实现新增/编辑表单、处理表单提交、设计校验规
 
 规范项目中表单的结构设计、校验规则写法、提交流程及数据回显模式。
 
-**核心原则**：表单状态本地管理，提交后统一走 api-integration 规范，校验规则集中定义不散落。
+**核心原则**：表单状态本地管理，提交后统一走 api-integration 规范，校验规则集中定义不散落。Ant Design Vue 优先集中定义规则；Vant 可按组件库模式写在 `van-field` 上，复杂或复用规则再抽常量。
 
 ## 何时激活
 
@@ -239,7 +239,7 @@ const formState = reactive({
   phone: '',
 })
 
-// Vant 校验规则格式不同，直接写在 van-field 上
+// Vant 校验规则格式不同，可直接写在 van-field 上；复杂或复用规则再抽成常量
 async function handleSubmit() {
   await formRef.value?.validate()
   // 提交逻辑...

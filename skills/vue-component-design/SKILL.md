@@ -235,9 +235,13 @@ const { keyword, filters, handleSearch, handleReset } =
 
 ### 2. 弹窗表单模式
 
+这里重点展示组件拆分和状态传递边界；表单校验、提交 loading、`code === 200` 判断和错误处理细节，必须继续遵循 `form-validation` 与 `api-integration`。
+
 ```vue
 <!-- EditUserModal.vue -->
 <script setup lang="ts">
+import type { FormInstance } from 'ant-design-vue'
+
 const visible = defineModel<boolean>('open', { default: false })
 
 interface Props {
@@ -256,33 +260,51 @@ const formState = reactive({
   name: '',
   email: '',
 })
+const formRef = ref<FormInstance | null>(null)
+const submitting = ref(false)
+const rules = {
+  name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+  email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
+}
 
 // 编辑时加载数据
 watch(() => props.userId, async (id) => {
   if (id) {
-    const data = await fetchUser(id)
-    Object.assign(formState, data)
+    const { data } = await fetchUser(id)
+    if (data?.code !== 200) return
+    Object.assign(formState, data.data)
   }
 }, { immediate: true })
 
 async function handleSubmit() {
-  if (isEdit.value) {
-    await updateUser(props.userId!, formState)
-  } else {
-    await createUser(formState)
+  await formRef.value?.validate()
+  if (submitting.value) return
+  submitting.value = true
+  try {
+    const { data } = isEdit.value
+      ? await updateUser(props.userId!, formState)
+      : await createUser(formState)
+    if (data?.code !== 200) return
+    visible.value = false
+    emit('success')
+  } finally {
+    submitting.value = false
   }
-  visible.value = false
-  emit('success')
 }
 </script>
 
 <template>
-  <a-modal v-model:open="visible" :title="title" @ok="handleSubmit">
-    <a-form :model="formState">
-      <a-form-item label="姓名">
+  <a-modal
+    v-model:open="visible"
+    :title="title"
+    :confirm-loading="submitting"
+    @ok="handleSubmit"
+  >
+    <a-form ref="formRef" :model="formState" :rules="rules">
+      <a-form-item label="姓名" name="name">
         <a-input v-model:value="formState.name" />
       </a-form-item>
-      <a-form-item label="邮箱">
+      <a-form-item label="邮箱" name="email">
         <a-input v-model:value="formState.email" />
       </a-form-item>
     </a-form>
