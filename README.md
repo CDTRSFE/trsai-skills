@@ -81,19 +81,9 @@ cp /path/to/trsai-skills/AGENTS.md ~/.codex/AGENTS.md
 
 识别到开发类需求、新页面、新组件体系或跨接口/表单/Store/权限的改动时，先使用 `trs-development-preflight` 判断 TRS 流程边界和领域 skill 路由，再按下面流程推进：
 
-```text
-trs-development-preflight -> brainstorming -> writing-plans -> 执行 -> chrome-devtools-mcp -> review
-```
+<img src="docs/assets/flow.png" alt="TRS 前端功能开发主流程" width="520">
 
-- `brainstorming`：产出需求 / 设计文档，明确目标、范围、交互、数据流、组件边界和验收标准。
-- `writing-plans`：结合 TRS skills 产出实施计划，必须声明 `Required TRS skills`，例如接口用 `api-integration`，表单用 `form-validation`，样式用 `css-patterns`，Store 用 `pinia-store-design`，组件拆分用 `vue-component-design`。
-- 执行：按计划修改代码；如果遇到计划外的新领域问题，再补充调用对应 TRS skill。
-- `chrome-devtools-mcp`：涉及页面、组件、样式、交互、接口联调或性能问题时，按计划完成浏览器运行时验证。
-- `review`：完成验证后用 `trs-code-review` 做 TRS 前端收尾审查。
-
-轻量例外只适用于明确 bug 修复、纯文案、纯类型、纯配置、纯脚本、纯文档等非需求/非功能任务；不得用“改动很小”跳过完整流程。样式调整若属于需求、功能或页面体验改造，仍按完整流程执行。处理轻量任务时应先确认范围或根因，按需调用领域 skill，直接修改并说明验证结果。
-
-Superpowers 结合方式见 `docs/superpowers-codex.md`。
+具体详情和结合 Superpowers 的开发方式见 [docs/superpowers-codex.md](docs/superpowers-codex.md)。
 
 ## 更新规范
 
