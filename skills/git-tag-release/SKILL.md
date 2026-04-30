@@ -1,9 +1,19 @@
 ---
 name: git-tag-release
-description: 在打 tag、发版、推 RC tag、生成下一个 patch/minor/major 版本号，或需要回写 package.json tag 字段并推送到远端时使用。
+description: 在规划或执行打 tag、发版、推 RC tag、生成下一个 patch/minor/major 版本号，或需要回写 package.json tag 字段并推送到远端时使用；writing-plans 阶段涉及发版任务时必须使用。
 ---
 
 # Git Tag Release
+
+## writing-plans 阶段要求
+
+当本技能用于实施计划阶段时，计划必须写清：
+
+- 本技能约束适用于哪些任务。
+- 计划的 `Required TRS skills` 中必须列出 `git-tag-release`。
+- 目标仓库、remote、tag prefix、versionType、suffix、是否回写 `package.json.tag`。
+- 预览、用户确认、执行脚本和推送 tag 的步骤边界。
+- 验证方式：预览结果、git status、tag 是否存在、push 结果；发版前需要 `pnpm build` 时，必须先获得用户明确确认。
 
 ## 适用场景
 
@@ -18,6 +28,10 @@ description: 在打 tag、发版、推 RC tag、生成下一个 patch/minor/majo
 - 预览阶段把“将要打的 tag”明确展示给用户。
 - 如果用户改参数，就重新预览。
 - 一旦用户确认，用预览产出的最终 tag 原样传给执行脚本，避免 `RC` 时间戳漂移。
+
+## 参考文档
+
+- 需要判断提交粒度、提交信息或 MR/PR 说明时，读取 `references/git.md`。
 
 ## Bundled Script
 
@@ -141,10 +155,12 @@ node "/absolute/path/to/git-tag-release/scripts/git-tag-release.cjs" execute --c
 ## 安全边界
 
 - 在执行前，一定要给用户看 `finalTag`。
+- 只处理本次发版相关文件；不要还原用户已有改动或无关文件。
 - 如果 tag 已存在，不要执行。
 - 如果 `editPkg=true`，要提示会修改 `package.json` 并尝试提交。
 - 如果工作区有未提交修改，尤其是 `package.json` 有改动，要把 warning 明确转述给用户。
 - 不要为了同步远端 tags 而删除本地全部 tags；脚本只做 `git fetch <remote> --tags`。
+- 不得默认执行 `pnpm build`；如果判断发版前必须构建验证，先说明原因并等待用户确认。
 
 ## 常见失败
 

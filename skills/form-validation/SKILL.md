@@ -1,6 +1,6 @@
 ---
 name: form-validation
-description: 在实现新增/编辑表单、处理表单提交、设计校验规则时使用。覆盖 Ant Design Vue（PC）和 Vant（移动端 H5）两套场景。
+description: 在规划或实现新增/编辑表单、筛选表单、弹窗表单、校验规则、提交和回显逻辑时使用；TRS 开发计划涉及表单任务时必须使用。
 ---
 
 # 表单验证与处理规范
@@ -10,6 +10,17 @@ description: 在实现新增/编辑表单、处理表单提交、设计校验规
 规范项目中表单的结构设计、校验规则写法、提交流程及数据回显模式。
 
 **核心原则**：表单状态本地管理，提交后统一走 api-integration 规范，校验规则集中定义不散落。Ant Design Vue 优先集中定义规则；Vant 可按组件库模式写在 `van-field` 上，复杂或复用规则再抽常量。
+
+## writing-plans 阶段要求
+
+当本技能用于实施计划阶段时，计划必须写清：
+
+- 本技能约束适用于哪些任务。
+- 计划的 `Required TRS skills` 中必须列出 `form-validation`；表单提交涉及接口时必须同时列出 `api-integration`。
+- 需要创建或修改的文件。
+- 表单场景、字段类型、校验规则、提交参数、回显映射、防重复提交和成功/失败反馈。
+- 验证方式：开发中优先 `pnpm lint:eslint` / `pnpm lint`，涉及页面交互必须做页面运行时、表单校验与 Network/Console 检查；不得默认安排 `pnpm build`，只有用户明确确认后才执行。
+- 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用 `chrome-devtools-mcp`，并列出页面路径、核心操作、Console、Network、布局检查点。
 
 ## 何时激活
 

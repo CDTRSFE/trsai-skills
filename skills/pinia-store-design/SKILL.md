@@ -1,6 +1,6 @@
 ---
 name: pinia-store-design
-description: 在决定是否建 store、设计 store 结构、编写 actions/getters、以及跨组件状态共享时使用。
+description: 在规划是否使用 Pinia、设计 store、跨组件/跨路由共享状态、未读数等全局状态时使用；TRS 开发计划涉及 Store 任务时必须使用。
 ---
 
 # Pinia 状态管理设计规范
@@ -10,6 +10,17 @@ description: 在决定是否建 store、设计 store 结构、编写 actions/get
 规范 Pinia store 的设计决策与代码结构。核心问题是"什么状态该放 store"，而不是"怎么写 store 语法"。
 
 **核心原则**：Store 是全局共享状态的最后手段，不是默认选择。
+
+## writing-plans 阶段要求
+
+当本技能用于实施计划阶段时，计划必须写清：
+
+- 本技能约束适用于哪些任务。
+- 计划的 `Required TRS skills` 中必须列出 `pinia-store-design`；Store action 涉及接口时必须同时列出 `api-integration`。
+- 需要创建或修改的文件。
+- 状态归属、共享范围、生命周期、持久化需求、actions/getters 和接口依赖。
+- 验证方式：开发中优先 `pnpm lint:eslint` / `pnpm lint`，涉及页面交互必须做页面运行时、跨组件或跨路由状态检查；不得默认安排 `pnpm build`，只有用户明确确认后才执行。
+- 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用 `chrome-devtools-mcp`，并列出页面路径、核心操作、Console、Network、布局检查点。
 
 ## 何时激活
 

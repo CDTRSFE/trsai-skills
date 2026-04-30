@@ -14,7 +14,7 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/ai-collaboration",
+        "./skills/trs-development-preflight",
         "./skills/api-integration",
         "./skills/css-patterns",
         "./skills/form-validation",
