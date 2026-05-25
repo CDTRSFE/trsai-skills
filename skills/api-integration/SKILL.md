@@ -18,7 +18,7 @@ description: 在规划或封装 HTTP 请求、设计 API 层、处理 loading/er
 - 需要创建或修改的文件。
 - 接口路径、请求参数、响应结构、loading/error/empty、防重复提交或轮询方案。
 - 验证方式：开发中优先 `pnpm lint:eslint` / `pnpm lint`，涉及页面交互必须做页面运行时、Network/Console 检查；不得默认安排 `pnpm build`，只有用户明确确认后才执行。
-- 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用 `chrome-devtools-mcp`，并列出页面路径、核心操作、Console、Network、布局检查点。
+- 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用当前环境可用的浏览器插件或 MCP 浏览器工具，并列出页面路径、核心操作、Console、Network、布局检查点。
 
 ## 何时激活
 

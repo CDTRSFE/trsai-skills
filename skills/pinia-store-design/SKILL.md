@@ -20,7 +20,7 @@ description: 在规划是否使用 Pinia、设计 store、跨组件/跨路由共
 - 需要创建或修改的文件。
 - 状态归属、共享范围、生命周期、持久化需求、actions/getters 和接口依赖。
 - 验证方式：开发中优先 `pnpm lint:eslint` / `pnpm lint`，涉及页面交互必须做页面运行时、跨组件或跨路由状态检查；不得默认安排 `pnpm build`，只有用户明确确认后才执行。
-- 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用 `chrome-devtools-mcp`，并列出页面路径、核心操作、Console、Network、布局检查点。
+- 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用当前环境可用的浏览器插件或 MCP 浏览器工具，并列出页面路径、核心操作、Console、Network、布局检查点。
 
 ## 何时激活
 
