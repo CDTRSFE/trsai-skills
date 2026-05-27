@@ -22,7 +22,7 @@ description: 在规划或设计新 Vue 组件、组件拆分、组件重构、Pr
 - 需要创建或修改的文件。
 - 关键组件职责、Props/Emits、Slots、expose 或 composable 抽取方案。
 - 验证步骤必须分层：开发中优先 `pnpm lint:eslint` / `pnpm lint`，涉及页面交互必须浏览器运行时验证；不得默认安排 `pnpm build`，只有用户明确确认后才执行。
-- 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用 `chrome-devtools-mcp`，并列出页面路径、核心操作、Console、Network、布局检查点。
+- 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用当前环境可用的浏览器插件或 MCP 浏览器工具，并列出页面路径、核心操作、Console、Network、布局检查点。
 
 ## 何时激活
 

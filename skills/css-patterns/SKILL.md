@@ -20,7 +20,7 @@ description: 在规划或编写页面/组件样式、布局、响应式、UnoCSS
 - 需要创建或修改的文件。
 - 样式方案：UnoCSS、`<style scoped>` / Less、`:deep()`、CSS 变量、响应式和 z-index 处理。
 - 样式任务开发中优先使用 `pnpm lint:stylelint` / `pnpm lint` 和浏览器布局检查；不得默认安排 `pnpm build`，只有用户明确确认后才执行。
-- 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用 `chrome-devtools-mcp`，并列出页面路径、核心操作、Console、Network、布局检查点。
+- 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用当前环境可用的浏览器插件或 MCP 浏览器工具，并列出页面路径、核心操作、Console、Network、布局检查点。
 
 ## 使用步骤
 

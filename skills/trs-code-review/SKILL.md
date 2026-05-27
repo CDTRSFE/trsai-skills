@@ -74,12 +74,12 @@ description: 在用户要求 TRS 前端代码审查、提交前检查、MR/PR �
 ### Git / 交付
 
 - diff 是否只包含本次任务相关改动。
-- 需求、功能、新页面、交互、接口、表单、Store、组件拆分任务是否经过 `trs-development-preflight -> brainstorming -> writing-plans -> 执行 -> chrome-devtools-mcp -> review`；纯文档、纯类型、纯配置、纯脚本、纯 skill 文案且无业务运行时影响的任务可走轻量流程。
+- 需求、功能、新页面、交互、接口、表单、Store、组件拆分任务是否经过 `trs-development-preflight -> brainstorming -> writing-plans -> 执行 -> 浏览器运行时验证 -> review`；纯文档、纯类型、纯配置、纯脚本、纯 skill 文案且无业务运行时影响的任务可走轻量流程。
 - writing-plans 是否声明 `Required TRS skills`，且实际执行没有跳过计划中声明的领域 skill 约束。
 - 是否按 `superpowers:verification-before-completion` 完成必要的快速验证、浏览器运行时验证或手动验证说明。
 - 不得把 `pnpm build` 作为默认 review 动作；只有用户明确确认后才执行或要求执行。
 - 最终回复不得把 `pnpm build` 作为默认已执行项或默认下一步；未执行 build 时，只说明“未按约定执行 build”。
-- 涉及页面、组件、样式、交互、接口联调或性能问题的改动，是否已按 plan 使用 `chrome-devtools-mcp` 完成浏览器运行时验证，并说明页面路径、核心操作、Console/Network/布局结果。
+- 涉及页面、组件、样式、交互、接口联调或性能问题的改动，是否已按 plan 使用当前环境可用的浏览器插件或 MCP 浏览器工具完成运行时验证，并说明页面路径、核心操作、Console/Network/布局结果。
 - 纯文档、纯类型、脚本配置、无 UI/运行时影响的改动，可不要求浏览器验证，但需要说明判断理由。
 - 是否保留用户已有改动，没有还原无关文件；若工作区有无关改动，应明确本次只检查任务相关 diff。
 - 开发完成后是否先询问用户是否提交本次修改；用户明确确认前，不得执行 `git add`、`git commit`、`git push` 或创建 PR。
@@ -107,7 +107,7 @@ description: 在用户要求 TRS 前端代码审查、提交前检查、MR/PR �
 
 ## 与 Superpowers 配合
 
-- 标准流程中，本技能位于 `trs-development-preflight -> brainstorming -> writing-plans -> 执行 -> chrome-devtools-mcp -> review` 的最后一步，负责检查实际 diff 是否符合 TRS 前端规范。
+- 标准流程中，本技能位于 `trs-development-preflight -> brainstorming -> writing-plans -> 执行 -> 浏览器运行时验证 -> review` 的最后一步，负责检查实际 diff 是否符合 TRS 前端规范。
 - TRS 开发任务的分析、计划和验证流程由 Superpowers 负责；本技能只做 TRS 前端收尾审查。
 - `writing-plans` 阶段应已按任务类型结合 `api-integration`、`form-validation`、`pinia-store-design`、`vue-component-design`、`css-patterns` 等领域技能；本技能负责收尾验收，不重新替代实施计划。
 - 完成开发后，先按 `superpowers:verification-before-completion` 做验证，再用本技能做 TRS 规范审查；审查结束后必须询问用户是否提交本次修改，用户明确确认前不得提交、推送或创建 PR。
