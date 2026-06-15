@@ -43,6 +43,7 @@ description: 在用户要求 TRS 前端代码审查、提交前检查、MR/PR �
 
 ### Vue / 组件
 
+- 新页面目录是否符合约定：页面文件夹用 `kebab-case`，主入口用对应 `PascalCase.vue` 并放在该文件夹下，例如 `search-all/SearchAll.vue`；页面拆分组件放同目录 `components/`，不要用 `modules/` 等泛化目录命名。
 - 组件职责是否单一，是否出现页面、业务组件、通用组件职责混杂。
 - Props / Emits 是否最小化、类型清晰，避免 Boolean 陷阱和隐式双向修改。
 - `<script setup>` 代码块顺序是否清晰：类型、Props/Emits、状态、计算、监听、函数、生命周期。

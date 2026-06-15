@@ -56,6 +56,39 @@ description: 在规划或设计新 Vue 组件、组件拆分、组件重构、Pr
 
 ## 组件层次设计
 
+### 页面目录约定
+
+创建新页面或新增路由级页面入口时，必须遵守页面目录与入口文件命名约定：
+
+- 页面文件夹使用路由段或业务模块的 `kebab-case` 名称，例如 `search-all/`。
+- 页面主入口 `.vue` 文件必须放在该页面文件夹下，文件名使用对应的 `PascalCase`，例如 `search-all/SearchAll.vue`。
+- 若页面拆分业务子组件，必须放在同一页面文件夹下的 `components/` 中，例如 `search-all/components/SearchFilter.vue`；不要使用 `modules/`、`module/`、`views/` 等泛化目录承载当前页面的拆分组件。
+- 只被当前页面使用的 `api.ts`、`types.ts`、`constants.ts`、`composables.ts` 等文件优先就近放在该页面文件夹下；被多个页面复用时再提升到模块级或公共目录。
+- 不要把页面主入口直接放在父级目录，也不要把只服务当前页面的业务组件放到全局 `@/components/`。
+
+示例：
+
+```text
+pages/
+└── search-all/
+    ├── SearchAll.vue
+    ├── api.ts
+    ├── types.ts
+    └── components/
+        ├── SearchFilter.vue
+        └── SearchResultList.vue
+```
+
+反例：
+
+```text
+pages/
+└── search-all/
+    ├── modules/
+    │   └── SearchFilter.vue
+    └── SearchAll.vue
+```
+
 ### 三层组件架构
 
 ```
