@@ -114,6 +114,28 @@ git push -u origin <当前分支>
 
 并再次确认 remote 和分支无误后执行。
 
+### Push 遇到远程新提交时的自动同步
+
+如果用户已经明确同意推送，并且 `git push` 因远程分支有本地没有的新提交而失败，例如出现以下信息：
+
+```text
+! [rejected] <branch> -> <branch> (fetch first)
+remote contains work that you do not have locally
+non-fast-forward
+```
+
+不要再询问用户是否执行同步；应自动执行安全同步流程：
+
+1. 执行 `git pull --rebase`。
+2. 如果 rebase 无冲突且成功完成，继续执行原本的 `git push` 或 `git push -u origin <当前分支>`。
+3. 如果 rebase 出现冲突、需要手动处理、权限失败、分支保护失败或其他非预期错误，必须停止自动流程，展示失败原因和当前状态，并请用户确认下一步。
+
+说明话术应简短，例如：
+
+```text
+远程分支有新提交，我会先自动执行 git pull --rebase，同步成功后继续推送；如果出现冲突会停下来让你确认。
+```
+
 ## 安全边界
 
 - 不得在用户确认前执行 `git add`、`git commit` 或 `git push`。
@@ -121,7 +143,7 @@ git push -u origin <当前分支>
 - 不得把无法判断的 Jira 类型强行猜成 `feat` 或 `fix`。
 - 如果 `git status` 没有改动，直接说明无需提交。
 - 如果 commit 失败，展示失败原因，并先排查原因；不要直接重试 push。
-- 如果 push 失败，展示失败原因，必要时提示用户处理权限、远程分支保护或冲突。
+- 如果 push 因远程新提交导致 `fetch first` / `non-fast-forward`，按“Push 遇到远程新提交时的自动同步”处理；其他 push 失败需展示失败原因，必要时提示用户处理权限、远程分支保护或冲突。
 
 ## 常见用户请求示例
 
