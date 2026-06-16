@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI 组件复用图谱"
+  short_description: "开发 UI 前检查 antd、公共组件索引和设计稿拆组件边界。"
+  default_prompt: "按 UI 组件复用图谱帮我分析这个设计稿或组件开发需求"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jira Git Workflow"
+  short_description: "Jira 任务完成后的 commit 与 push 收尾流程"
+  default_prompt: "这个 Jira 做完了，帮我按团队格式提交并确认是否推送远程"
