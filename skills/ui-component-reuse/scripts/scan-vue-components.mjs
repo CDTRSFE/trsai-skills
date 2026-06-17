@@ -118,6 +118,20 @@ function hasAny(words, candidates) {
   return candidates.some((candidate) => words.includes(candidate))
 }
 
+function toKebabCase(value) {
+  return String(value || '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/[\s_]+/g, '-')
+    .toLowerCase()
+}
+
+function stripMarkdown(value) {
+  return String(value || '')
+    .replace(/<br\s*\/?\>/gi, '\n')
+    .replace(/`/g, '')
+    .trim()
+}
+
 function inferUsage({ name, path: rel, props, scope, view }) {
   const words = splitWords(`${name} ${rel}`)
   const propWords = splitWords(props.join(' '))
@@ -164,18 +178,37 @@ function inferUsage({ name, path: rel, props, scope, view }) {
   return `${name} 组件（用途需结合源码确认）`
 }
 
-function findImportRefs(allTextFiles, componentFile) {
-  const base = path.basename(componentFile, '.vue')
+function collectUsage(allTextFiles, componentFile, componentName) {
+  const base = componentName || path.basename(componentFile, '.vue')
+  const fileBase = path.basename(componentFile, '.vue')
+  const names = [...new Set([base, fileBase].filter(Boolean))]
+  const kebabNames = names.map(toKebabCase)
   const rel = toPosix(componentFile).replace(/\.vue$/, '')
-  const refs = []
+  const aliasRel = '@/' + rel.replace(/^src\//, '')
+  const refs = new Set()
+  let templateUseCount = 0
+
   for (const file of allTextFiles) {
     if (file === componentFile) continue
     const content = fs.readFileSync(file, 'utf8')
-    if (content.includes(base) || content.includes(rel) || content.includes('@/' + rel.replace(/^src\//, ''))) {
-      refs.push(toPosix(file))
+    const relFile = toPosix(file)
+    const hasImportLikeRef = names.some((name) => content.includes(name)) || content.includes(rel) || content.includes(aliasRel)
+
+    let fileTemplateUseCount = 0
+    if (file.endsWith('.vue')) {
+      for (const name of names) {
+        fileTemplateUseCount += [...content.matchAll(new RegExp(`<${name}(?=[\\s>/])`, 'g'))].length
+      }
+      for (const name of kebabNames) {
+        fileTemplateUseCount += [...content.matchAll(new RegExp(`<${name}(?=[\\s>/])`, 'g'))].length
+      }
     }
+
+    if (hasImportLikeRef || fileTemplateUseCount > 0) refs.add(relFile)
+    templateUseCount += fileTemplateUseCount
   }
-  return [...new Set(refs)]
+
+  return { refs: [...refs], templateUseCount }
 }
 
 function walkTextFiles(dir) {
@@ -201,19 +234,22 @@ function inspect(file, scope) {
   const content = fs.readFileSync(file, 'utf8')
   const props = extractNamesFromTypeBlock(extractTypeArgument(content, 'defineProps') || extractRuntimeObject(content, 'defineProps'))
   const emits = extractEmitNames(extractTypeArgument(content, 'defineEmits') || extractRuntimeObject(content, 'defineEmits'))
-  const refs = findImportRefs(allTextFiles, file)
+  const name = extractDefineOptionsName(content) || path.basename(file, '.vue')
+  const usage = collectUsage(allTextFiles, file, name)
+  const refs = usage.refs
   const rel = toPosix(file)
   const viewMatch = rel.match(/^src\/views\/([^/]+)/)
   return {
-    name: extractDefineOptionsName(content) || path.basename(file, '.vue'),
+    name,
     path: rel,
     scope,
     view: scope === '页面局部组件' ? (viewMatch?.[1] || '未识别') : '-',
     props: props.join(', ') || '-',
     emits: emits.join(', ') || '-',
     refs,
+    templateUseCount: usage.templateUseCount,
     summary: extractCommentSummary(content) || inferUsage({
-      name: extractDefineOptionsName(content) || path.basename(file, '.vue'),
+      name,
       path: rel,
       props,
       scope,
@@ -225,7 +261,7 @@ function inspect(file, scope) {
 const rows = [
   ...publicFiles.map((file) => inspect(file, '公共组件')),
   ...viewFiles.map((file) => inspect(file, '页面局部组件')),
-].sort((a, b) => b.refs.length - a.refs.length || a.path.localeCompare(b.path))
+].sort((a, b) => b.refs.length - a.refs.length || b.templateUseCount - a.templateUseCount || a.path.localeCompare(b.path))
 
 const now = new Date().toISOString().slice(0, 10)
 function buildLines() {
@@ -238,29 +274,109 @@ lines.push('> 本文件是项目正式组件索引；后续 UI / 组件开发前
 lines.push('')
 lines.push('## 公共组件')
 lines.push('')
-lines.push('| 组件 | 路径 | 用途 | Props | Emits | 引用次数 | 引用位置 |')
-lines.push('| --- | --- | --- | --- | --- | --- | --- |')
+lines.push('| 组件 | 路径 | 用途 | Props | Emits | 引用文件数 | 模板使用次数 | 引用位置 |')
+lines.push('| --- | --- | --- | --- | --- | --- | --- | --- |')
 for (const item of rows.filter((row) => row.scope === '公共组件')) {
-  lines.push(`| ${escapeCell(item.name)} | \`${escapeCell(item.path)}\` | ${escapeCell(item.summary)} | ${escapeCell(item.props)} | ${escapeCell(item.emits)} | ${item.refs.length} | ${escapeCell(item.refs.join('<br>') || '-')} |`)
+  lines.push(`| ${escapeCell(item.name)} | \`${escapeCell(item.path)}\` | ${escapeCell(item.summary)} | ${escapeCell(item.props)} | ${escapeCell(item.emits)} | ${item.refs.length} | ${item.templateUseCount} | ${escapeCell(item.refs.join('<br>') || '-')} |`)
 }
 lines.push('')
 lines.push('## 页面局部组件')
 lines.push('')
-lines.push('| 组件 | 路径 | 所属 view | 用途 | Props | Emits | 引用次数 | 是否建议公共化 |')
-lines.push('| --- | --- | --- | --- | --- | --- | --- | --- |')
+lines.push('| 组件 | 路径 | 所属 view | 用途 | Props | Emits | 引用文件数 | 模板使用次数 | 引用位置 | 是否建议公共化 |')
+lines.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
 for (const item of rows.filter((row) => row.scope === '页面局部组件')) {
   const promote = item.refs.length >= 2 ? '建议评估' : '否'
-  lines.push(`| ${escapeCell(item.name)} | \`${escapeCell(item.path)}\` | ${escapeCell(item.view)} | ${escapeCell(item.summary)} | ${escapeCell(item.props)} | ${escapeCell(item.emits)} | ${item.refs.length} | ${promote} |`)
+  lines.push(`| ${escapeCell(item.name)} | \`${escapeCell(item.path)}\` | ${escapeCell(item.view)} | ${escapeCell(item.summary)} | ${escapeCell(item.props)} | ${escapeCell(item.emits)} | ${item.refs.length} | ${item.templateUseCount} | ${escapeCell(item.refs.join('<br>') || '-')} | ${promote} |`)
 }
 lines.push('')
 return lines
+}
+
+
+function parseExistingIndex(content) {
+  const items = new Map()
+  const lines = content.split(/\r?\n/)
+  let header = null
+  for (const line of lines) {
+    if (!line.startsWith('|')) continue
+    const cells = line.split('|').slice(1, -1).map((cell) => stripMarkdown(cell))
+    if (cells.length < 2) continue
+    if (cells.every((cell) => /^-+$/.test(cell.replace(/\s/g, '')))) continue
+    if (cells.includes('组件') && cells.includes('路径')) {
+      header = cells
+      continue
+    }
+    if (!header) continue
+    const row = {}
+    header.forEach((name, index) => { row[name] = cells[index] || '' })
+    const componentPath = row['路径']
+    if (!componentPath || componentPath === '路径') continue
+    items.set(componentPath, {
+      name: row['组件'] || path.basename(componentPath, '.vue'),
+      path: componentPath,
+      summary: row['用途'] || '',
+      refFileCount: Number(row['引用文件数'] || row['引用次数'] || 0),
+      templateUseCount: Number(row['模板使用次数'] || 0),
+      promote: row['是否建议公共化'] || '',
+    })
+  }
+  return items
+}
+
+function hasDesignRecord(content) {
+  const marker = '## 设计稿拆组件记录'
+  const index = content.indexOf(marker)
+  if (index < 0) return false
+  const rest = content.slice(index + marker.length)
+  return rest
+    .split(/\r?\n/)
+    .some((line) => line.startsWith('|') && !line.includes('---') && !line.includes('页面/需求'))
+}
+
+function printCompareReport() {
+  const content = fs.readFileSync(indexFile, 'utf8')
+  const existing = parseExistingIndex(content)
+  const current = new Map(rows.map((item) => [item.path, {
+    name: item.name,
+    path: item.path,
+    summary: item.summary,
+    refFileCount: item.refs.length,
+    templateUseCount: item.templateUseCount,
+    promote: item.scope === '页面局部组件' ? (item.refs.length >= 2 ? '建议评估' : '否') : '',
+  }]))
+
+  const added = [...current.values()].filter((item) => !existing.has(item.path))
+  const removed = [...existing.values()].filter((item) => !current.has(item.path))
+  const changed = []
+  const promoteChanged = []
+  const usageChanged = []
+
+  for (const [componentPath, item] of current) {
+    const old = existing.get(componentPath)
+    if (!old) continue
+    const metricChanges = []
+    if (old.refFileCount !== item.refFileCount) metricChanges.push(`引用文件数 ${old.refFileCount} → ${item.refFileCount}`)
+    if (old.templateUseCount !== item.templateUseCount) metricChanges.push(`模板使用次数 ${old.templateUseCount} → ${item.templateUseCount}`)
+    if (metricChanges.length) changed.push(`${item.name}（${item.path}）：${metricChanges.join('，')}`)
+    if (old.summary && old.summary !== item.summary) usageChanged.push(`${item.name}（${item.path}）：用途可能变化，请确认是否需由“${old.summary}”更新为“${item.summary}”`)
+    if (old.promote && item.promote && old.promote !== item.promote) promoteChanged.push(`${item.name}（${item.path}）：公共化建议 ${old.promote} → ${item.promote}`)
+  }
+
+  console.log('组件图谱对比扫描结果：')
+  console.log(`- 新增组件：${added.length ? added.map((item) => `${item.name}（${item.path}）`).join('；') : '无'}`)
+  console.log(`- 删除组件：${removed.length ? removed.map((item) => `${item.name}（${item.path}）`).join('；') : '无'}`)
+  console.log(`- 引用指标变化：${changed.length ? changed.join('；') : '无'}`)
+  console.log(`- 用途变化候选：${usageChanged.length ? usageChanged.join('；') : '无'}`)
+  console.log(`- 新增公共组件候选/建议变化：${promoteChanged.length ? promoteChanged.join('；') : '无'}`)
+  console.log(`- 新增/复用/改造记录是否已写入：${hasDesignRecord(content) ? '已存在记录，请结合本次需求确认是否补充最新记录' : '未发现有效记录，若本次涉及 UI/组件开发必须补充'}`)
+  console.log('提示：脚本不会自动覆盖已有正式索引；请根据以上差异更新 docs/component-map.md，或在回复中明确未更新原因。')
 }
 
 fs.mkdirSync(path.dirname(indexFile), { recursive: true })
 
 if (fs.existsSync(indexFile) && !shouldForce) {
   console.log(`索引已存在，未覆盖：${path.relative(cwd, indexFile)}`)
-  console.log('如需按当前扫描结果重新生成，请添加 --force。')
+  printCompareReport()
 } else {
   const lines = buildLines()
   fs.writeFileSync(indexFile, lines.join('\n'), 'utf8')
