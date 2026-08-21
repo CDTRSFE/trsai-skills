@@ -17,6 +17,7 @@ description: 在规划或封装 HTTP 请求、设计 API 层、处理 loading/er
 - 计划的 `Required TRS skills` 中必须列出 `api-integration`；若同时涉及组件、样式、表单或 Store，也必须列出对应 TRS skill。
 - 需要创建或修改的文件。
 - 接口路径、请求参数、响应结构、loading/error/empty、防重复提交或轮询方案。
+- 若页面先做静态开发再接口联调，计划必须写清 mock 数据清理点；接口对接完成后必须删除不再使用的 mock 数据、硬编码展示值、临时 fallback、临时 `setTimeout` 和调试日志。
 - 验证方式：开发中优先 `pnpm lint:eslint` / `pnpm lint`，涉及页面交互必须做页面运行时、Network/Console 检查；不得默认安排 `pnpm build`，只有用户明确确认后才执行。
 - 若任务涉及页面、组件、样式、交互或接口联调，计划中必须增加 `Browser Runtime Verification` 小节，声明使用当前环境可用的浏览器插件或 MCP 浏览器工具，并列出页面路径、核心操作、Console、Network、布局检查点。
 
@@ -34,6 +35,7 @@ description: 在规划或封装 HTTP 请求、设计 API 层、处理 loading/er
 - 通过 `data?.code === 200` 判断业务成功，不成功直接 `return`
 - loading 在请求前设 `true`，必须在 `finally` 中设 `false`，不能漏关
 - 需要提示用户时才加 `.catch()` / `catch` 块，不强制每个请求都写
+- 静态阶段允许临时使用 mock 数据，但接口对接完成后必须清理不再使用的假数据和硬编码，包括 mock 数组、写死统计值、写死图表数据、临时接口 fallback、临时 `setTimeout`、调试 `console.log`
 
 ## 标准写法
 
