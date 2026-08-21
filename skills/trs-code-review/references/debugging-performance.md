@@ -7,7 +7,8 @@ Superpowers 已提供系统化调试和验证流程。本文件只保留 TRS 前
 - UI 问题：先确认 props、响应式状态、条件渲染和样式覆盖。
 - 请求问题：检查请求参数、响应结构、错误码、loading 关闭时机。
 - 状态问题：检查 Pinia 是否重复请求、状态是否被非预期共享或覆盖。
-- 样式问题：检查容器尺寸、`min-height: 0`、`min-width: 0`、滚动容器和 z-index。
+- 样式问题：检查容器尺寸、`min-height: 0`、`min-width: 0`、滚动容器、文本截断/换行策略和 z-index。
+- 文本撑出问题：先定位是哪一层 flex/grid 子项没有 `min-w-0` 或宽度约束，再检查文本节点是否缺少 `truncate`、`line-clamp-*`、`break-words` 或 `overflow-wrap:anywhere`；不要只用外层 `overflow-hidden` 遮住症状。
 
 ## chrome-devtools-mcp 使用边界
 
