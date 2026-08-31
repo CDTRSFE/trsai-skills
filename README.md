@@ -73,8 +73,7 @@ cp /path/to/trsai-skills/AGENTS.md ~/.codex/AGENTS.md
 | `css-patterns` | 任意页面或组件样式编写/调整、样式覆盖、局部布局、响应式、z-index、UnoCSS 与 CSS/Less 取舍 |
 | `form-validation` | 新增/编辑表单、表单提交、校验规则（Ant Design Vue / Vant） |
 | `git-tag-release` | 打 tag、发版、推 RC tag、管理 package.json tag 前缀 |
-| `deploy` | 通过项目根目录 `deploy.json` 执行部署、构建、镜像更新，支持 Jenkins / Apollo provider 路由 |
-| `apollo-deploy` | Apollo DevOps 流水线部署、镜像提取和环境镜像同步 |
+| `deployment-skill` | 通过项目根目录 `deploy.json` 执行部署、构建、镜像更新，按 provider 路由 Jenkins / Apollo / ArgoCD 规则 |
 | `jira-git-workflow` | Jira 任务完成后的 commit/push 收尾：根据 Jira 截图或文字生成 `feat`/`fix` 提交信息，提交和推送前都必须确认 |
 | `pinia-store-design` | 决定是否建 store、设计 store 结构、跨组件状态共享 |
 | `vue-component-design` | 设计新组件、重构组件、组件拆分策略 |

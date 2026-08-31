@@ -1,15 +1,10 @@
----
-name: apollo-deploy
-description: Use when the user asks for Apollo deployment specifically, or when a project-root deploy.json has provider apollo. For generic deploy.json workflows or non-Apollo providers such as jenkins, use the deploy skill instead.
----
+# Apollo Provider
 
-# Apollo Deploy
+Use this provider when `deploy.json` has `"provider": "apollo"` or the user selects Apollo deployment. `部署` means build the selected Apollo pipeline, get the pushed image, then update the selected environment application image. `更新镜像` means update the selected environment application image without starting a build. When the user inputs exactly or clearly `部署生产`, run the production deployment flow.
 
-Use this skill for Apollo development or production deployment. `部署` means build the selected Apollo pipeline, get the pushed image, then update the selected environment application image. `更新镜像` means update the selected environment application image without starting a build. When the user inputs exactly or clearly `部署生产`, run the production deployment flow.
+This provider file is the source of truth for Apollo-specific APIs, authentication, discovery, polling, and reporting inside `deployment-skill`.
 
-For provider-agnostic deployment routing or non-Apollo providers, use the `deploy` skill. This Apollo skill remains the source of truth for Apollo-specific APIs, authentication, discovery, polling, and reporting.
-
-If the user only says a generic `部署`/`发布` and the project has no `deploy.json` or no configured `provider`, do not assume Apollo and do not ask for an Apollo pipeline name yet. Use the generic `deploy` skill first so the user can choose Apollo or Jenkins.
+If the user only says a generic `部署`/`发布` and the project has no `deploy.json` or no configured `provider`, do not assume Apollo and do not ask for an Apollo pipeline name yet. Return to `deployment-skill` routing so the user can choose Apollo or Jenkins.
 
 ## Language
 
@@ -62,7 +57,7 @@ http://10.18.20.131:90/apollo-web/#/pipeline
 
 Do not add or modify the other target as part of that run.
 
-Use this skill only when `provider` is `apollo`. If `provider` is another value such as `jenkins`, say that provider is not handled yet.
+Use this provider only when `provider` is `apollo`. If `provider` is another value such as `jenkins`, return to `deployment-skill` routing.
 
 When creating or updating `deploy.json`, preserve a stable JSON shape:
 

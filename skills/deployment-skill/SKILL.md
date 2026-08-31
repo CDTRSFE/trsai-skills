@@ -1,13 +1,13 @@
 ---
-name: deploy
-description: Use when the user asks to deploy, build, run a deployment pipeline, update or sync an image, deploy production, or add deployment configuration for projects using deploy.json with providers such as apollo or jenkins.
+name: deployment-skill
+description: Use when the user asks to deploy, build, run a deployment pipeline, update or sync an image, deploy production, or add deployment configuration for projects using deploy.json with providers such as Apollo, Jenkins, or ArgoCD.
 metadata:
-  short-description: Route project deployments through provider-specific adapters
+  short-description: Route project deployments through provider-specific workflows
 ---
 
-# Deploy
+# Deployment Skill
 
-Use this skill as the common deployment entrypoint for project-root `deploy.json` workflows. It separates user intent, shared deployment workflows, configuration shape, and provider-specific behavior.
+Use this skill as the only deployment entrypoint for project-root `deploy.json` workflows. It separates user intent, shared deployment workflows, configuration shape, and provider-specific behavior.
 
 When the user writes in Chinese, all user-facing progress updates, questions, and final reports must be in Chinese. Keep API paths, field names, image tags, branch names, commit hashes, and status constants such as `SUCCESS` in their original form.
 
@@ -40,11 +40,12 @@ Select the target environment before reading environment-specific configuration:
 
 Use `provider` to choose the provider reference:
 
-- `apollo`: read [references/providers-apollo.md](references/providers-apollo.md).
-- `jenkins`: read [references/providers-jenkins.md](references/providers-jenkins.md).
+- `apollo`: read [providers/apollo.md](providers/apollo.md).
+- `jenkins`: read [providers/jenkins.md](providers/jenkins.md).
+- `argocd`: read [providers/argocd.md](providers/argocd.md).
 - Unknown provider: stop and say the configured provider is not supported yet.
 
-If the user selects Apollo, continue with the Apollo provider rules and the existing `apollo-deploy` skill. If the user selects Jenkins, prefer the Jenkins `git-tag` mode and collect the minimum missing information needed for the selected target. For Jenkins `git-tag` projects, one exact Jenkins job URL is usually enough to start configuration when `package.json#tagPrefix` and a Git remote already exist.
+If the user selects Apollo, continue with the Apollo provider rules in this skill. If the user selects Jenkins, prefer the Jenkins `git-tag` mode and collect the minimum missing information needed for the selected target. For Jenkins `git-tag` projects, one exact Jenkins job URL is usually enough to start configuration when `package.json#tagPrefix` and a Git remote already exist.
 
 When asking for one missing Jenkins job URL, do not print a summary of inferred fields such as target, trigger, remote, tag prefix, version type, `editPkg`, or application name. Ask directly and keep example URLs clickable with Markdown links:
 
@@ -52,9 +53,13 @@ When asking for one missing Jenkins job URL, do not print a summary of inferred 
 请提供这个项目开发环境的 Jenkins Job 完整 URL，例如：[http://192.168.210.40:30080/job/cqwx-dual-grid-h5/](http://192.168.210.40:30080/job/cqwx-dual-grid-h5/)
 ```
 
-When creating, updating, or validating `deploy.json`, read [references/config-schema.md](references/config-schema.md).
+When creating, updating, or validating `deploy.json`, read [config-schema.json](config-schema.json).
 
-When executing a user action, read [references/workflows.md](references/workflows.md) and the selected provider reference.
+When executing a user action, read the selected workflow file and provider reference:
+
+- `build-and-sync`: [workflows/build-and-sync.md](workflows/build-and-sync.md)
+- `sync-image-only`: [workflows/sync-image-only.md](workflows/sync-image-only.md)
+- `discover-config`: [workflows/discover-config.md](workflows/discover-config.md)
 
 ## Action Selection
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deployment Skill"
+  short_description: "Deploy projects through provider-specific workflows."
+  default_prompt: "Deploy the current project using deploy.json and report the result."

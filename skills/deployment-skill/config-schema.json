@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "deploy.json",
+  "type": "object",
+  "required": ["provider", "defaultTarget", "environments"],
+  "properties": {
+    "provider": {
+      "type": "string",
+      "enum": ["apollo", "jenkins", "argocd"]
+    },
+    "defaultTarget": {
+      "type": "string",
+      "minLength": 1
+    },
+    "apolloUrl": {
+      "type": "string"
+    },
+    "apiBaseUrl": {
+      "type": "string"
+    },
+    "jenkinsUrl": {
+      "type": "string"
+    },
+    "environments": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/environment"
+      }
+    },
+    "confirmBeforeStart": {
+      "type": "boolean"
+    },
+    "confirmBeforeSyncImage": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "environment": {
+      "type": "object",
+      "properties": {
+        "envName": { "type": "string" },
+        "namespace": { "type": "string" },
+        "trigger": { "type": "string", "enum": ["git-tag", "jenkins-build"] },
+        "remote": { "type": "string" },
+        "tagPrefix": { "type": "string" },
+        "versionType": { "type": "string", "enum": ["major", "minor", "patch", "RC"] },
+        "editPkg": { "type": "boolean" },
+        "pipelineName": { "type": ["string", "null"] },
+        "jobName": { "type": ["string", "null"] },
+        "jobUrl": { "type": "string" },
+        "jenkinsId": { "type": ["number", "null"] },
+        "applicationName": { "type": ["string", "null"] },
+        "imagePattern": { "type": ["string", "null"] },
+        "syncImage": { "type": "boolean" },
+        "appId": { "type": ["string", "number", "null"] },
+        "resourceType": { "type": ["number", "null"] },
+        "buildWithParameters": { "type": "boolean" },
+        "buildParams": { "type": "object" },
+        "deployJobUrl": { "type": "string" },
+        "deployJobName": { "type": "string" },
+        "deployBuildWithParameters": { "type": "boolean" },
+        "deployParams": { "type": "object" }
+      },
+      "additionalProperties": true
+    }
+  }
+}
