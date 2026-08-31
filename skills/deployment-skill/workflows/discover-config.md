@@ -4,7 +4,7 @@ Use when `deploy.json` is missing, the selected target is absent, or required pr
 
 1. Determine the selected target first.
 2. Ask only for missing values that cannot be safely discovered.
-3. Before writing provider configuration, complete any provider authentication or authorization preflight that is possible with the discovered user-supplied locator, such as Jenkins `<jobUrl>/api/json`.
+3. Before writing provider configuration, complete any provider authentication or authorization preflight that is possible with the discovered user-supplied locator, such as Jenkins `<jobUrl>/api/json` or Apollo login/session validation.
 4. Prefer provider APIs or CLIs to discover stable IDs, job names, application names, and image prefixes.
 5. Write back only the selected target configuration after the provider preflight succeeds.
 6. Re-read `deploy.json` after writing it before continuing.

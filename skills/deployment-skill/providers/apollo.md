@@ -37,7 +37,7 @@ If `deploy.json` is missing, do not open Apollo UI, search pages, or infer the t
 请提供这个项目在当前目标环境对应的 Apollo 精确流水线名称：
 http://10.18.20.131:90/apollo-web/#/pipeline
 
-收到后我会通过 Apollo API 校验流水线，生成 deploy.json，然后继续部署。
+收到后我会先做 Apollo 登录预检；预检通过后再通过 Apollo API 校验流水线，生成 deploy.json，然后继续部署。
 ```
 
 Do not continue to discovery, build, or image sync until the user confirms the exact pipeline name. After the pipeline name is confirmed, discover the remaining fields through Apollo APIs, create a small deterministic `deploy.json` containing only the selected target's `environments.<target>` entry, and continue through APIs. After `deploy.json` exists, trust its configured mapping instead of re-discovering by project name.
@@ -52,7 +52,7 @@ deploy.json 里没有找到当前目标环境的完整配置。
 请提供这个项目在当前目标环境对应的 Apollo 精确流水线名称：
 http://10.18.20.131:90/apollo-web/#/pipeline
 
-收到后我会通过 Apollo API 校验流水线，补齐 deploy.json，然后继续部署。
+收到后我会先做 Apollo 登录预检；预检通过后再通过 Apollo API 校验流水线，补齐 deploy.json，然后继续部署。
 ```
 
 Do not add or modify the other target as part of that run.
@@ -77,6 +77,8 @@ Authentication priority:
 3. Use an existing logged-in Codex in-app browser Apollo session only when local credentials are absent or API login fails. Use it only for authentication/session reuse and same-origin API requests; do not click UI controls for deployment operations.
 4. If API login, local secret loading, and browser-session API authentication all fail, report the failing endpoint/status/message and stop. Do not use UI deployment fallback unless the user explicitly asks after seeing the API failure.
 
+Apollo authentication preflight is mandatory before validating a pipeline, creating or updating `deploy.json`, starting a pipeline build, extracting the current build image, or syncing an image. If credentials are missing or login/session validation fails, stop immediately. Do not start a build and do not let a pipeline produce an image before discovering that Apollo authentication is unavailable.
+
 Do not ask the user for copied request headers as the normal path.
 
 Do not store Apollo credentials in project `deploy.json`, deployment logs, Git commits, final reports, or the skill itself. Team-shared credentials should be distributed out of band and placed by each user in their own local secrets file.
@@ -88,31 +90,59 @@ macOS/Linux: ~/.codex/secrets/apollo.env
 Windows:     %USERPROFILE%\.codex\secrets\apollo.env
 ```
 
-Expected format:
+When asking the user to configure Apollo credentials, provide one self-contained copy-paste script. Do not only show the env file path or split the command from a separate "content format" block.
 
-```bash
-APOLLO_TEST_USERNAME=<apollo username>
-APOLLO_TEST_PASSWORD=<apollo password>
+Default to an editable-at-the-top script, not an interactive prompt. The user should only need to change the username and password assignment lines, then paste the whole block into the terminal. If the current OS is Windows or the user says they are using CMD, provide this CMD script:
+
+```bat
+:: 只需要改下面两行，然后整段复制到 CMD 运行
+set "APOLLO_TEST_USERNAME=你的 Apollo 账号"
+set "APOLLO_TEST_PASSWORD=你的 Apollo 密码"
+
+mkdir "%USERPROFILE%\.codex\secrets" 2>nul
+(
+  echo APOLLO_TEST_USERNAME=%APOLLO_TEST_USERNAME%
+  echo APOLLO_TEST_PASSWORD=%APOLLO_TEST_PASSWORD%
+) > "%USERPROFILE%\.codex\secrets\apollo.env"
+
+echo 已写入 %USERPROFILE%\.codex\secrets\apollo.env
 ```
 
-On macOS/Linux, make the secrets directory and file readable only by the current local user:
+On macOS/Linux, provide this shell script:
 
 ```bash
-mkdir -p ~/.codex/secrets
-chmod 700 ~/.codex/secrets
-chmod 600 ~/.codex/secrets/apollo.env
+# 只需要改下面两行，然后整段复制运行
+APOLLO_TEST_USERNAME='你的 Apollo 账号'
+APOLLO_TEST_PASSWORD='你的 Apollo 密码'
+
+mkdir -p "$HOME/.codex/secrets"
+chmod 700 "$HOME/.codex/secrets"
+
+cat > "$HOME/.codex/secrets/apollo.env" <<EOF
+APOLLO_TEST_USERNAME=$APOLLO_TEST_USERNAME
+APOLLO_TEST_PASSWORD=$APOLLO_TEST_PASSWORD
+EOF
+chmod 600 "$HOME/.codex/secrets/apollo.env"
+echo "已写入 $HOME/.codex/secrets/apollo.env"
 ```
 
-On Windows, create the same file under the current user's profile. Do not put it inside a project repository:
+If the user specifically asks for PowerShell, provide this script:
 
 ```powershell
-New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\secrets"
+# 只需要改下面两行，然后整段复制运行
+$APOLLO_TEST_USERNAME = "你的 Apollo 账号"
+$APOLLO_TEST_PASSWORD = "你的 Apollo 密码"
+
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\secrets" | Out-Null
 @"
-APOLLO_TEST_USERNAME=<apollo username>
-APOLLO_TEST_PASSWORD=<apollo password>
+APOLLO_TEST_USERNAME=$APOLLO_TEST_USERNAME
+APOLLO_TEST_PASSWORD=$APOLLO_TEST_PASSWORD
 "@ | Set-Content -Encoding utf8 "$env:USERPROFILE\.codex\secrets\apollo.env"
-icacls "$env:USERPROFILE\.codex\secrets\apollo.env" /inheritance:r /grant:r "${env:USERNAME}:(R,W)"
+icacls "$env:USERPROFILE\.codex\secrets\apollo.env" /inheritance:r /grant:r "${env:USERNAME}:(R,W)" | Out-Null
+Write-Host "已写入 $env:USERPROFILE\.codex\secrets\apollo.env"
 ```
+
+Do not put this file inside a project repository.
 
 ## API Login
 
