@@ -1,0 +1,4 @@
+interface:
+  display_name: "Apollo Deploy"
+  short_description: "Deploy Apollo DevOps pipelines to dev or production and return image names."
+  default_prompt: "Deploy the current project with Apollo and report the image name."

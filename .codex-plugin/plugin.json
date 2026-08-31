@@ -1,7 +1,7 @@
 {
   "name": "trsai-skills",
   "version": "1.0.0",
-  "description": "TRS 前端团队 Codex 技能集，聚焦开发前置检查、实现判断、Jira 提交收尾、工具发版和代码审查",
+  "description": "TRS 前端团队 Codex 技能集，聚焦开发前置检查、实现判断、Jira 提交收尾、工具发版、部署和代码审查",
   "author": {
     "name": "TRS Team"
   },
@@ -18,7 +18,7 @@
   "interface": {
     "displayName": "TRS AI Skills",
     "shortDescription": "TRS 前端团队 Codex 技能与 Superpowers 协作规范",
-    "longDescription": "为 Codex 提供 TRS 前端团队的开发前置检查、接口集成、表单处理、Pinia 状态设计、Vue 组件设计、CSS 布局判断、Jira 提交收尾、发版工具和代码审查能力。基础格式、命名、样式细节由团队脚手架内置 ESLint、stylelint、Prettier 和 commit 校验负责。",
+    "longDescription": "为 Codex 提供 TRS 前端团队的开发前置检查、接口集成、表单处理、Pinia 状态设计、Vue 组件设计、CSS 布局判断、Jira 提交收尾、发版工具、Jenkins/Apollo 部署和代码审查能力。基础格式、命名、样式细节由团队脚手架内置 ESLint、stylelint、Prettier 和 commit 校验负责。",
     "developerName": "TRS Team",
     "category": "Productivity",
     "capabilities": [
@@ -30,6 +30,7 @@
       "按 TRS 规范分析这个前端需求并给出实现方案",
       "结合 Superpowers 帮我规划并实现这个功能",
       "用 TRS Code Review 检查本次改动",
+      "按 deploy.json 部署当前项目",
       "这个 Jira 做完了，按团队格式提交并确认是否推送远程"
     ],
     "brandColor": "#1677FF"

@@ -19,6 +19,8 @@
         "./skills/css-patterns",
         "./skills/form-validation",
         "./skills/git-tag-release",
+        "./skills/deploy",
+        "./skills/apollo-deploy",
         "./skills/jira-git-workflow",
         "./skills/pinia-store-design",
         "./skills/vue-component-design",

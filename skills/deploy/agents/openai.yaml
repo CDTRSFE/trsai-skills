@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deploy"
+  short_description: "Deploy projects through provider-specific deploy.json adapters."
+  default_prompt: "Deploy the current project using deploy.json and report the result."
