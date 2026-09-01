@@ -90,9 +90,31 @@ macOS/Linux: ~/.codex/secrets/apollo.env
 Windows:     %USERPROFILE%\.codex\secrets\apollo.env
 ```
 
-When asking the user to configure Apollo credentials, provide one self-contained copy-paste script. Do not only show the env file path or split the command from a separate "content format" block.
+When asking the user to configure Apollo credentials, provide copy-paste scripts, not only the env file path or a separate "content format" block.
 
-Default to an editable-at-the-top script, not an interactive prompt. The user should only need to change the username and password assignment lines, then paste the whole block into the terminal. If the current OS is Windows or the user says they are using CMD, provide this CMD script:
+Default to editable-at-the-top scripts, not interactive prompts. The user should only need to change the username and password assignment lines, then paste the matching block into their terminal.
+
+If the current OS cannot be reliably detected from the active workspace or tool environment, provide both the macOS/Linux script and the Windows CMD script in the same response. Do not ask the user whether they are on macOS or Windows just to choose a credentials script.
+
+For macOS/Linux, provide this shell script:
+
+```bash
+# 只需要改下面两行，然后整段复制到终端运行
+APOLLO_TEST_USERNAME='你的 Apollo 账号'
+APOLLO_TEST_PASSWORD='你的 Apollo 密码'
+
+mkdir -p "$HOME/.codex/secrets"
+chmod 700 "$HOME/.codex/secrets"
+
+cat > "$HOME/.codex/secrets/apollo.env" <<EOF
+APOLLO_TEST_USERNAME=$APOLLO_TEST_USERNAME
+APOLLO_TEST_PASSWORD=$APOLLO_TEST_PASSWORD
+EOF
+chmod 600 "$HOME/.codex/secrets/apollo.env"
+echo "已写入 $HOME/.codex/secrets/apollo.env"
+```
+
+For Windows CMD, provide this script:
 
 ```bat
 :: 只需要改下面两行，然后整段复制到 CMD 运行
@@ -106,24 +128,6 @@ mkdir "%USERPROFILE%\.codex\secrets" 2>nul
 ) > "%USERPROFILE%\.codex\secrets\apollo.env"
 
 echo 已写入 %USERPROFILE%\.codex\secrets\apollo.env
-```
-
-On macOS/Linux, provide this shell script:
-
-```bash
-# 只需要改下面两行，然后整段复制运行
-APOLLO_TEST_USERNAME='你的 Apollo 账号'
-APOLLO_TEST_PASSWORD='你的 Apollo 密码'
-
-mkdir -p "$HOME/.codex/secrets"
-chmod 700 "$HOME/.codex/secrets"
-
-cat > "$HOME/.codex/secrets/apollo.env" <<EOF
-APOLLO_TEST_USERNAME=$APOLLO_TEST_USERNAME
-APOLLO_TEST_PASSWORD=$APOLLO_TEST_PASSWORD
-EOF
-chmod 600 "$HOME/.codex/secrets/apollo.env"
-echo "已写入 $HOME/.codex/secrets/apollo.env"
 ```
 
 If the user specifically asks for PowerShell, provide this script:

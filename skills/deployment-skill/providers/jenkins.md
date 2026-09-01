@@ -64,14 +64,18 @@ JENKINS_PASSWORD=<jenkins password>
 JENKINS_API_TOKEN=<jenkins api token>
 ```
 
-When asking the user to configure Jenkins credentials, provide one self-contained copy-paste script. Do not split the command from a separate "file content format" block.
+When asking the user to configure Jenkins credentials, provide copy-paste scripts. Do not split the command from a separate "file content format" block.
 
-Default to an editable-at-the-top script, not an interactive `read` script. The user should only need to change the username and token/password assignment lines, then paste the whole block into the terminal. Keep the editable lines at the top and label them in nearby prose, for example: "只需要改下面前两行，然后整段复制运行。"
+Default to editable-at-the-top scripts, not interactive `read` scripts. The user should only need to change the username and token/password assignment lines, then paste the matching block into their terminal. Keep the editable lines at the top and label them in nearby prose, for example: "只需要改下面前两行，然后整段复制运行。"
 
-If the concrete username/password is already known from the user's explicit input, include those values directly in the script with shell-safe quoting so the pasted script succeeds without further editing. If the values are not known, use obvious placeholder values in the top assignment lines. Prefer password over API token:
+If the current OS cannot be reliably detected from the active workspace or tool environment, provide both the macOS/Linux script and the Windows CMD script in the same response. Do not ask the user whether they are on macOS or Windows just to choose a credentials script.
+
+If the concrete username/password is already known from the user's explicit input, include those values directly in the scripts with shell-safe quoting so the pasted script succeeds without further editing. If the values are not known, use obvious placeholder values in the top assignment lines. Prefer password over API token.
+
+For macOS/Linux, provide this shell script:
 
 ```bash
-# 只需要改下面两行，然后整段复制运行
+# 只需要改下面两行，然后整段复制到终端运行
 JENKINS_USERNAME='你的 Jenkins 用户名'
 JENKINS_PASSWORD='你的 Jenkins 密码'
 
@@ -86,10 +90,26 @@ chmod 600 "$HOME/.codex/secrets/jenkins.env"
 echo "已写入 $HOME/.codex/secrets/jenkins.env"
 ```
 
-If the user specifically asks to use an API token, provide the same single-script pattern with `JENKINS_API_TOKEN` instead of `JENKINS_PASSWORD`:
+For Windows CMD, provide this script:
+
+```bat
+:: 只需要改下面两行，然后整段复制到 CMD 运行
+set "JENKINS_USERNAME=你的 Jenkins 用户名"
+set "JENKINS_PASSWORD=你的 Jenkins 密码"
+
+mkdir "%USERPROFILE%\.codex\secrets" 2>nul
+(
+  echo JENKINS_USERNAME=%JENKINS_USERNAME%
+  echo JENKINS_PASSWORD=%JENKINS_PASSWORD%
+) > "%USERPROFILE%\.codex\secrets\jenkins.env"
+
+echo 已写入 %USERPROFILE%\.codex\secrets\jenkins.env
+```
+
+If the user specifically asks to use an API token, provide both the macOS/Linux and Windows CMD scripts with `JENKINS_API_TOKEN` instead of `JENKINS_PASSWORD` unless the current OS is already known.
 
 ```bash
-# 只需要改下面两行，然后整段复制运行
+# 只需要改下面两行，然后整段复制到终端运行
 JENKINS_USERNAME='你的 Jenkins 用户名'
 JENKINS_API_TOKEN='你的 Jenkins API token'
 
@@ -104,7 +124,21 @@ chmod 600 "$HOME/.codex/secrets/jenkins.env"
 echo "已写入 $HOME/.codex/secrets/jenkins.env"
 ```
 
-On Windows, create the same file under the current user's profile. Do not put it inside a project repository:
+```bat
+:: 只需要改下面两行，然后整段复制到 CMD 运行
+set "JENKINS_USERNAME=你的 Jenkins 用户名"
+set "JENKINS_API_TOKEN=你的 Jenkins API token"
+
+mkdir "%USERPROFILE%\.codex\secrets" 2>nul
+(
+  echo JENKINS_USERNAME=%JENKINS_USERNAME%
+  echo JENKINS_API_TOKEN=%JENKINS_API_TOKEN%
+) > "%USERPROFILE%\.codex\secrets\jenkins.env"
+
+echo 已写入 %USERPROFILE%\.codex\secrets\jenkins.env
+```
+
+If the user specifically asks for PowerShell, provide this script. Do not put it inside a project repository:
 
 ```powershell
 # 只需要改下面两行，然后整段复制运行
