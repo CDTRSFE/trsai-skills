@@ -34,9 +34,11 @@ Select the target environment before reading environment-specific configuration:
 - `dev` means development / `开发环境`.
 - `prod` means production / `生产环境`.
 - If the user says `部署生产`, `生产部署`, `prod`, or otherwise clearly asks for production, use `prod`.
+- In TRS projects, a bare `部署`, `发布`, `build`, or `运行流水线` means the development environment. Use `dev` even when `deploy.json.defaultTarget` is `prod` or only `environments.prod` exists.
 - If the user names another environment, use that target key.
-- If the user does not name an environment, use `defaultTarget`, then `dev`.
+- Use `defaultTarget` only for non-TRS projects or when the user explicitly asks to use the configured default target.
 - Do not create, discover, or require unrelated target configuration while handling the selected target.
+- If the selected target is `dev` and `deploy.json` only contains `prod`, do not deploy or mutate `prod`. Treat `environments.dev` as missing and run `discover-config` for `dev` only.
 
 Use `provider` to choose the provider reference:
 
@@ -45,7 +47,7 @@ Use `provider` to choose the provider reference:
 - `argocd`: read [providers/argocd.md](providers/argocd.md).
 - Unknown provider: stop and say the configured provider is not supported yet.
 
-If the user selects Apollo, continue with the Apollo provider rules in this skill. If the user selects Jenkins, prefer the Jenkins `git-tag` mode and collect the minimum missing information needed for the selected target. For Jenkins `git-tag` projects, one exact Jenkins job URL is usually enough to start configuration when `package.json#tagPrefix` and a Git remote already exist.
+If the user selects Apollo, continue with the Apollo provider rules in this skill. If the user selects Jenkins, treat TRS Jenkins deployments as `git-tag` deployments by default and collect the minimum missing information needed for the selected target. Do not try to rediscover whether Jenkins should be triggered by a Git tag or called directly on every deployment. Only use direct Jenkins triggering when `deploy.json` explicitly sets `trigger: "jenkins-build"` for the selected target or the user explicitly says to start Jenkins directly. For Jenkins `git-tag` projects, one exact Jenkins job URL is usually enough to start configuration when `package.json#tagPrefix` and a Git remote already exist.
 
 When asking for one missing Jenkins job URL, do not print a summary of inferred fields such as target, trigger, remote, tag prefix, version type, `editPkg`, or application name. Ask directly and keep example URLs clickable with Markdown links:
 
@@ -63,7 +65,7 @@ When executing a user action, read the selected workflow file and provider refer
 
 ## Action Selection
 
-- `部署`: run `build-and-sync`.
+- `部署`: use target `dev`, then run `build-and-sync`. If `environments.dev` is missing or incomplete, run `discover-config` for `dev` only.
 - `部署生产`: use target `prod`, then run `build-and-sync`.
 - `build`, `构建`, `运行流水线`: run the provider build flow; sync an image only when the selected target config enables it or the user asks for it.
 - `更新镜像 <image>`, `变更镜像 <image>`, `sync image <image>`: run `sync-image-only` with the provided image.
@@ -73,6 +75,7 @@ When executing a user action, read the selected workflow file and provider refer
 ## Safety Boundaries
 
 - Prefer API or CLI execution over UI clicking for deployment operations.
+- Do not treat an existing production configuration as permission to deploy production. Production requires a current explicit production request.
 - Do not deploy to production or mutate external deployment state when the required target configuration is missing or ambiguous.
 - Do not ask for copied browser headers as the normal path. Prefer configured credentials, tokens, API sessions, or a documented provider authentication path.
 - Redact raw build/deploy logs before showing them. At minimum mask authorization headers, cookies, tokens, passwords, and `docker login ... -p <value>`.

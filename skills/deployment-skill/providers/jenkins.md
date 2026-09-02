@@ -18,7 +18,7 @@ For the selected target, require one of:
 - `jobUrl`: full Jenkins job URL.
 - `jobName` plus top-level `jenkinsUrl`.
 
-For Jenkins deployments in TRS-style projects, default to `trigger: "git-tag"` unless `deploy.json` explicitly says `trigger: "jenkins-build"` or the user says Jenkins should be started directly. In this mode, the required user-supplied deployment address is usually just the exact Jenkins job URL.
+For Jenkins deployments in TRS-style projects, default to `trigger: "git-tag"` unless `deploy.json` explicitly says `trigger: "jenkins-build"` for the selected target or the user says Jenkins should be started directly. Do not rediscover or re-explain the trigger mode for every deployment when `trigger` is omitted; omission means the team default, `git-tag`. In this mode, the required user-supplied deployment address is usually just the exact Jenkins job URL.
 
 Recommended fields:
 
@@ -205,7 +205,7 @@ If Jenkins authentication is required, use configured Jenkins credentials from e
 
 ### jenkins-build
 
-Use this mode when Codex should trigger Jenkins directly through Jenkins HTTP endpoints. If `trigger` is omitted, treat it as `jenkins-build` for backward compatibility.
+Use this mode when Codex should trigger Jenkins directly through Jenkins HTTP endpoints. Because TRS Jenkins deployments default to `git-tag`, use this mode only when the selected target explicitly sets `trigger: "jenkins-build"` or the user explicitly asks to start Jenkins directly.
 
 ## Job URL Rules
 
@@ -221,7 +221,7 @@ Trigger endpoints:
 
 For parameterized builds, send `buildParams` as form fields unless the job API clearly requires a different encoding.
 
-Only call these trigger endpoints for `trigger: "jenkins-build"` or when `trigger` is omitted. For `trigger: "git-tag"`, the side effect is the Git tag push, not a Jenkins `/build` request.
+Only call these trigger endpoints for `trigger: "jenkins-build"` or when the user explicitly asks to start Jenkins directly. For omitted `trigger` or `trigger: "git-tag"`, the side effect is the Git tag push, not a Jenkins `/build` request.
 
 ## Build Correlation
 

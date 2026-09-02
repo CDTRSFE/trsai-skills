@@ -11,6 +11,8 @@ Use when `deploy.json` is missing, the selected target is absent, or required pr
 
 Do not infer a production deployment target from repository names or fuzzy UI text. Production configuration must be explicit enough to avoid mutating the wrong system.
 
+For TRS projects, a bare `部署`, `发布`, `build`, or `运行流水线` selects `dev`. If `deploy.json` already has `prod` but lacks `dev`, treat only `dev` as missing configuration and continue discovery for `dev`; never use the existing `prod` entry as a fallback or template unless the user explicitly asks to configure production.
+
 ## deploy.json Git Follow-Up
 
 Use only after a deployment or image update has succeeded. Never commit `deploy.json` after a failed or ambiguous deployment state.

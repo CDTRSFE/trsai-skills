@@ -17,7 +17,8 @@ Read only `deploy.json` from the project root. Do not search `.codex/` and do no
 Select the target environment before reading environment-specific configuration:
 
 - If the user says `部署生产`, `生产部署`, `prod`, or otherwise clearly asks for production, use `prod`.
-- If the user does not name an environment, use `defaultTarget`, then `dev`.
+- In TRS projects, a bare `部署`, `发布`, `build`, or `运行流水线` means `dev` / `云哨开发环境`. Use `dev` even when `deploy.json.defaultTarget` is `prod` or only `environments.prod` exists.
+- Use `defaultTarget` only for non-TRS projects or when the user explicitly asks to use the configured default target.
 - Do not create, discover, or require `dev` configuration while handling `prod`; do not create, discover, or require `prod` configuration while handling `dev`. Each target owns its own configuration.
 
 Known Apollo environment mapping:
@@ -42,7 +43,7 @@ http://10.18.20.131:90/apollo-web/#/pipeline
 
 Do not continue to discovery, build, or image sync until the user confirms the exact pipeline name. After the pipeline name is confirmed, discover the remaining fields through Apollo APIs, create a small deterministic `deploy.json` containing only the selected target's `environments.<target>` entry, and continue through APIs. After `deploy.json` exists, trust its configured mapping instead of re-discovering by project name.
 
-If `deploy.json` exists but the selected target environment is missing or incomplete, ask only for that target's missing production/development configuration. For `prod`, use the known `envName`/`namespace` above and ask for the exact production pipeline name if `pipelineName` is missing. Use this prompt:
+If `deploy.json` exists but the selected target environment is missing or incomplete, ask only for that target's missing production/development configuration. If a bare `部署` selected `dev` and the file only contains `prod`, treat that as missing `dev` configuration; do not run or modify `prod`, and do not rewrite the existing `prod` entry into `dev`. For `dev`, use `云哨开发环境` / `trs-police-yunshao`; for `prod`, use `云哨测试环境` / `trs-police-yunshao-test`. Use this prompt:
 
 ```text
 deploy.json 里没有找到当前目标环境的完整配置。
