@@ -1,6 +1,6 @@
 # Apollo Provider
 
-Use this provider when `deploy.json` has `"provider": "apollo"` or the user selects Apollo deployment. `部署` means build the selected Apollo pipeline, get the pushed image, then update the selected environment application image. `更新镜像` means update the selected environment application image without starting a build. When the user inputs exactly or clearly `部署生产`, run the production deployment flow.
+Use this provider when `deploy.json` has `"provider": "apollo"` or the user selects Apollo deployment. `部署` means prepare a traceable deployment tag, build the selected Apollo pipeline, get the pushed image, then update the selected environment application image. `更新镜像` means update the selected environment application image without starting a build. When the user inputs exactly or clearly `部署生产`, run the production deployment flow.
 
 This provider file is the source of truth for Apollo-specific APIs, authentication, discovery, polling, and reporting inside `deployment-skill`.
 
@@ -243,12 +243,39 @@ When `appId` exists, API-first is mandatory for image discovery and image sync. 
 
 ## Action Selection
 
-- `部署`: start the selected target pipeline, wait for the current build to finish, extract the pushed image, then sync the selected target app image when `syncImage` is true.
+- `部署`: prepare the selected target deployment tag, start the selected target pipeline, wait for the current build to finish, extract the pushed image, then sync the selected target app image when `syncImage` is true.
 - `部署生产`: use target `prod`, then run the same build/poll/extract/sync workflow as `部署`.
 - `更新镜像 <image>` or `变更镜像 <image>`: do not build; sync the selected target app to the provided image.
 - `更新镜像` with no image: do not build; use the latest successful pushed image. Prefer Apollo image options marked `最新版本`; otherwise use the latest image matching `imagePattern` from the pipeline log.
 
 Reject images that do not start with `imagePattern` unless the user explicitly confirms the mismatch.
+
+## Deployment Tag Preparation
+
+Apollo builds are not triggered by pushing a Git tag, but TRS deployment traceability still requires the build to include a deterministic `package.json#tag` value before the Apollo pipeline starts.
+
+Before starting an Apollo `部署` pipeline:
+
+1. Verify whether the project has runtime tag output capability, such as console output, a visible diagnostic area, or another project-local mechanism that exposes the built `package.json#tag`/build tag at runtime.
+2. If runtime tag output is missing, explain the traceability gap, ask the user to confirm the code change, add the smallest project-consistent implementation, commit it, and push the current branch before continuing.
+3. Use the `git-tag-release` skill with the selected target:
+
+```bash
+node "/absolute/path/to/git-tag-release/scripts/git-tag-release.cjs" preview --cwd /path/to/repo --remote origin --target dev --edit-pkg true --push-branch true --json
+```
+
+4. Show the computed tag, target, prefix source, `package.json#tag` commit action, current branch push action, and tag push action. Execute only after the user confirms.
+5. Execute with the previewed `finalTag` unchanged:
+
+```bash
+node "/absolute/path/to/git-tag-release/scripts/git-tag-release.cjs" execute --cwd /path/to/repo --remote origin --target dev --tag "<finalTag>" --edit-pkg true --push-branch true --json
+```
+
+6. Record the final tag and the resulting `HEAD` commit before starting the Apollo pipeline.
+
+If `git-tag-release` cannot push the branch or tag, stop before starting the Apollo build. Do not build an Apollo image from code whose deployment tag was not recorded and pushed.
+
+This deployment tag rule applies to `部署` and `部署生产`; it does not apply to image-only `更新镜像`.
 
 ## API-First Workflow
 
@@ -433,6 +460,13 @@ Redact all raw Apollo/Jenkins log snippets before showing them in progress updat
 
 Successful final reports must use the fixed templates below with no extra narrative paragraphs. Keep internal API/login/debug details in progress updates only when useful for troubleshooting; do not include them in the success final report.
 
+Apollo success reports must always include an access URL derived from the selected target and `environments.<target>.applicationName` in `deploy.json`:
+
+- `dev`: `https://ys.dev.trs/<applicationName>/`
+- `prod`: `https://ys.test.trs/<applicationName>/`
+
+Use exactly the selected target's `applicationName` value as the path segment. If `applicationName` is missing or empty, do not omit the access URL silently; report the deployment result and clearly state that the access URL cannot be produced until `deploy.json` has `environments.<target>.applicationName`.
+
 For a successful `部署`, use this concise default format:
 
 ```text
@@ -441,14 +475,28 @@ For a successful `部署`, use this concise default format:
 构建状态：SUCCESS
 打镜像耗时：<duration>
 
+Tag：
+<tag>
+
+Commit：
+<commit>
+
 镜像：
 <full image>
+
+Apollo：
+<pipeline/build URL>
+
+访问地址：
+<access URL>
 
 <环境名称>已同步：
 <previous short image> 变更为 <new short image>
 ```
 
 Use the selected target's configured `envName` in user-facing text when available. For `dev`, this is usually `云哨开发环境`; for `prod`, use `云哨测试环境`. Compute `打镜像耗时` from the build/log start and end timestamps when available, formatted like `3分38秒`. If exact timestamps are unavailable, omit the duration instead of guessing.
+
+For `部署`, `Tag` and `Commit` come from the Deployment Tag Preparation step. If either value is unavailable, do not report success until the missing value is explained as a separate Git follow-up problem.
 
 For `更新镜像`, omit build state and duration:
 
@@ -458,13 +506,16 @@ For `更新镜像`, omit build state and duration:
 镜像：
 <full image>
 
+访问地址：
+<access URL>
+
 <环境名称>已同步：
 <previous short image> 变更为 <new short image>
 ```
 
 Do not include Pod status, node IP, raw Apollo/Jenkins status text such as `Finished: SUCCESS`, login details, endpoint discovery details, digest suffixes such as `@sha256:...`, or internal details such as `appId` in successful default output. Mention `appId`, UI fallback, or config writeback only when the user needs to act on it or something remains incomplete.
 
-If `deploy.json` was created or updated, append one concise line after the default success output, for example `已新增 deploy.json` or `已更新 deploy.json`. Do not commit or push `deploy.json` unless the user explicitly asks for it. Do not report Pod status such as `1/1 Running` in the success output.
+If `deploy.json` was created or updated during a successful deployment or image update, commit and push only `deploy.json` after the external operation succeeds, following `workflows/discover-config.md` deploy.json Git Follow-Up. Append one concise line after the default success output, including the config commit hash and pushed branch when available, for example `已新增并提交 deploy.json：<commit> -> <branch>` or `已更新并提交 deploy.json：<commit> -> <branch>`. If the commit or push fails, report the deployment success and the Git follow-up problem separately. Do not report Pod status such as `1/1 Running` in the success output.
 
 On failure, report the failed phase, terminal state, the most relevant sanitized failure log snippet, and a URL for user inspection. For pipeline build failures, use the direct log URL. For image sync failures, provide the configured Apollo application/topology page URL when available; otherwise provide `apolloUrl` plus the failing API endpoint and app/application identifiers needed to locate the failure.
 

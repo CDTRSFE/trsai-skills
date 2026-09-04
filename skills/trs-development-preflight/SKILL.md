@@ -106,7 +106,7 @@ trs-development-preflight -> brainstorming -> writing-plans -> 执行 -> 浏览�
 - 计划中的每个任务必须标注适用的 TRS skill；执行阶段不得跳过计划中已声明的 skill 约束。
 - 涉及页面、组件、样式、交互、接口联调或性能问题时，执行后必须按计划使用当前环境可用的浏览器插件或 MCP 浏览器工具完成运行时验证。
 - 明确 Bug 修复必须先用 `superpowers:systematic-debugging` 确认根因，再做最小修复和验证。
-- 项目开发完成后，Codex 必须先向用户确认是否提交本次修改；未经用户明确确认，不得自作主张执行 `git add`、`git commit`、`git push` 或创建 PR。
+- 项目开发完成后，Codex 必须先向用户确认是否提交本次修改；未经用户明确确认，不得自作主张执行 `git add`、`git commit`、`git push` 或创建 MR。
 - 纯文档、纯类型、纯配置、纯脚本、纯 skill 文案且无业务运行时影响的任务，可以走轻量流程。
 
 ## 需求文档规则
@@ -142,7 +142,7 @@ docs/requirements/*.md
 - 新增/编辑表单、筛选表单、弹窗表单、校验、提交、回显：`form-validation`
 - Pinia、跨组件/跨路由共享状态、全局状态：`pinia-store-design`
 - 打 tag、发版、RC tag、版本号、回写 `package.json.tag`：`git-tag-release`
-- 代码审查、提交前检查、MR/PR 检查、完成验收：`trs-code-review`
+- 代码审查、提交前检查、GitLab MR 检查、完成验收：`trs-code-review`
 
 ## writing-plans 约束
 
@@ -154,7 +154,7 @@ docs/requirements/*.md
 - `Files and ownership`：说明要改哪些文件、每个文件负责什么。
 - `Validation`：列出 lint、typecheck、单测、运行时验证或不能执行的原因。
 - `Browser Runtime Verification`：涉及页面、组件、样式、交互、接口联调或性能问题时必须包含。
-- `Commit Confirmation`：开发和验证完成后，必须询问用户是否提交本次修改；用户确认前不得执行提交、推送或 PR 操作。
+- `Commit Confirmation`：开发和验证完成后，必须询问用户是否提交本次修改；用户确认前不得执行提交、推送或 MR 操作。
 
 `Browser Runtime Verification` 需要写清：
 
@@ -173,7 +173,7 @@ Codex 不得默认执行 `pnpm build`。只有用户明确确认后才执行；�
 - 需求已清楚但实现复杂：用本技能声明 `Required TRS skills` 后进入 `superpowers:writing-plans`。
 - 轻量流程任务：按需使用对应 TRS 领域 skill 的关键约束，直接实施并做针对性验证；若实施中发现影响接口、表单、权限、Store、业务交互或验收边界，必须回到本技能重新分流。
 - 明确 Bug：跳过本技能，使用 `superpowers:systematic-debugging`。
-- 执行完成：先复查并同步对应 `docs/requirements/*.md`，再按计划使用当前环境可用的浏览器插件或 MCP 浏览器工具做运行时验证，再使用 `superpowers:verification-before-completion` 和 `trs-code-review`，最后询问用户是否提交本次修改；用户明确确认前，不得提交、推送或创建 PR。不要在本技能里做收尾审查。
+- 执行完成：先复查并同步对应 `docs/requirements/*.md`，再按计划使用当前环境可用的浏览器插件或 MCP 浏览器工具做运行时验证，再使用 `superpowers:verification-before-completion` 和 `trs-code-review`，最后询问用户是否提交本次修改；用户明确确认前，不得提交、推送或创建 MR。不要在本技能里做收尾审查。
 
 ## 外部任务工具降级
 

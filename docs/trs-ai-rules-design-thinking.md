@@ -72,7 +72,7 @@
 | `vue-component-design` | 约束 Vue 组件拆分、Props、Emits、composable 抽取 |
 | `pinia-store-design` | 约束 Pinia Store 和跨组件、跨路由共享状态设计 |
 | `ui-component-reuse` | 约束公共组件、页面组件、自研组件的复用和放置方式 |
-| `trs-code-review` | 约束代码审查、提交前检查、MR/PR 检查和验收检查 |
+| `trs-code-review` | 约束代码审查、提交前检查、GitLab MR 检查和验收检查 |
 | `jira-git-workflow` | 约束 Jira 任务完成后的 commit 信息、提交和推送确认 |
 | `git-tag-release` | 约束 tag、发版和版本号处理 |
 
@@ -264,7 +264,7 @@ AI 写代码前需要先查看项目已有公共组件、公共方法、资源�
 - commit 信息符合团队规范。
 - commit 后不默认 push。
 - 发版和 tag 操作需要按规范执行。
-- 未经用户确认不得提交、推送或创建 PR。
+- 未经用户确认不得提交、推送或创建 MR。
 
 ## 六、落地方式
 

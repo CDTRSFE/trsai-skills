@@ -71,10 +71,12 @@ Usage:
 Options:
   --cwd <path>            Target repository path. Defaults to current directory.
   --remote <name>         Remote to fetch/push. Defaults to the first git remote.
-  --prefix <value>        Tag prefix. Defaults to package.json#tagPrefix[0].
+  --prefix <value>        Tag prefix. Non-target releases default to package.json#tagPrefix[0].
+  --target <env>          TRS deploy target: dev | prod. Uses <abbr>-<env>-v rollover tags.
   --version-type <type>   major | minor | patch | RC. Defaults to patch.
   --suffix <value>        Optional suffix appended to the final tag.
   --edit-pkg <bool>       true | false. Defaults to true.
+  --push-branch <bool>    Push current branch HEAD after release commit. Defaults to false.
   --tag <value>           Explicit final tag. Useful after preview confirmation.
   --json                  Print machine-readable JSON output.
   --help                  Show this help message.
@@ -96,21 +98,29 @@ function preview(options) {
     cwd: context.cwd,
     remote: context.remote,
     prefix: context.prefix,
+    target: context.target,
     versionType: context.versionType,
     suffix: context.suffix,
     editPkg: context.editPkg,
+    pushBranch: context.pushBranch,
     finalTag: context.finalTag,
     manualTagUsed: context.manualTagUsed,
+    prefixSource: context.prefixSource,
+    targetPrefixes: context.targetPrefixes,
     tagPrefixes: context.tagPrefixes,
     warnings: context.warnings,
-    problems,
-    ready: problems.length === 0,
+    problems: [...context.problems, ...problems],
+    ready: context.problems.length === 0 && problems.length === 0,
     actions: buildActions(context),
   };
 }
 
 function execute(options) {
   const context = inspectRepository(options);
+
+  if (context.problems.length > 0) {
+    throw new Error(context.problems.join('; '));
+  }
 
   if (context.finalTagExists) {
     throw new Error(`Tag already exists: ${context.finalTag}`);
@@ -138,6 +148,15 @@ function execute(options) {
     }
   }
 
+  if (context.pushBranch) {
+    if (!context.currentBranch) {
+      throw new Error('Cannot push branch from detached HEAD');
+    }
+
+    runGit(['push', context.remote, `HEAD:refs/heads/${context.currentBranch}`], context.cwd);
+    performed.push(`git push ${context.remote} HEAD:refs/heads/${context.currentBranch}`);
+  }
+
   runGit(['tag', context.finalTag], context.cwd);
   performed.push(`git tag ${context.finalTag}`);
 
@@ -149,11 +168,15 @@ function execute(options) {
     cwd: context.cwd,
     remote: context.remote,
     prefix: context.prefix,
+    target: context.target,
     versionType: context.versionType,
     suffix: context.suffix,
     editPkg: context.editPkg,
+    pushBranch: context.pushBranch,
     finalTag: context.finalTag,
     manualTagUsed: context.manualTagUsed,
+    prefixSource: context.prefixSource,
+    targetPrefixes: context.targetPrefixes,
     warnings: context.warnings,
     actions: buildActions(context),
     performed,
@@ -177,8 +200,9 @@ function inspectRepository(options) {
     throw new Error(`package.json is not valid JSON: ${error.message}`);
   }
 
-  const tagPrefixes = packageJson.tagPrefix;
-  if (!Array.isArray(tagPrefixes) || tagPrefixes.length === 0) {
+  const target = normalizeTarget(options.target);
+  const tagPrefixes = Array.isArray(packageJson.tagPrefix) ? packageJson.tagPrefix : [];
+  if (!target && tagPrefixes.length === 0) {
     throw new Error('package.json#tagPrefix must be a non-empty array');
   }
 
@@ -199,12 +223,30 @@ function inspectRepository(options) {
   runGit(['fetch', remote, '--tags'], cwd);
 
   const manualTag = typeof options.tag === 'string' ? options.tag : '';
-  const prefix = options.prefix || inferPrefix(manualTag, tagPrefixes) || tagPrefixes[0];
+  const tags = runGit(['tag'], cwd)
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const targetPrefixResult = target
+    ? resolveTargetPrefix({
+      cwd,
+      packageJson,
+      target,
+      tags,
+      explicitPrefix: options.prefix,
+      manualTag,
+    })
+    : null;
+  const prefix = targetPrefixResult
+    ? targetPrefixResult.prefix
+    : options.prefix || inferPrefix(manualTag, tagPrefixes) || tagPrefixes[0];
   const requestedVersionType = options['version-type'] || 'patch';
   const suffix = typeof options.suffix === 'string' ? options.suffix : '';
   const editPkg = parseBooleanOption(options['edit-pkg'], true);
+  const pushBranch = parseBooleanOption(options['push-branch'], false);
 
-  if (!manualTag && !prefix) {
+  if (!manualTag && !prefix && !target) {
     throw new Error('A tag prefix is required when --tag is not provided');
   }
 
@@ -212,22 +254,22 @@ function inspectRepository(options) {
     throw new Error(`Unsupported version type: ${requestedVersionType}`);
   }
 
-  const tags = runGit(['tag'], cwd)
-    .split('\n')
-    .map((item) => item.trim())
-    .filter(Boolean);
-
   const groupedTags = resolveTags(tags);
-  const computedTag = manualTag || buildTag({
-    prefix,
-    versionType: requestedVersionType,
-    suffix,
-    tags: groupedTags[prefix] || [],
-  });
+  const problems = targetPrefixResult ? targetPrefixResult.problems : [];
+  const computedTag = manualTag || (target
+    ? buildTargetTag({ prefix, suffix, tags: groupedTags[prefix] || [], problems })
+    : buildTag({
+      prefix,
+      versionType: requestedVersionType,
+      suffix,
+      tags: groupedTags[prefix] || [],
+    }));
 
-  const versionType = manualTag && !options['version-type'] ? 'manual' : requestedVersionType;
+  const versionType = target && !manualTag
+    ? 'deployment-sequence'
+    : manualTag && !options['version-type'] ? 'manual' : requestedVersionType;
 
-  const finalTagExists = runGit(['tag', '--list', computedTag], cwd)
+  const finalTagExists = Boolean(computedTag) && runGit(['tag', '--list', computedTag], cwd)
     .split('\n')
     .map((item) => item.trim())
     .filter(Boolean)
@@ -245,32 +287,48 @@ function inspectRepository(options) {
     warnings.push('Working tree is dirty; review local changes before publishing a tag');
   }
 
+  const currentBranch = runGit(['branch', '--show-current'], cwd).trim();
+
   return {
     cwd,
     remote,
     remotes,
     prefix,
+    target,
     suffix,
     versionType,
     editPkg,
+    pushBranch,
     manualTagUsed: Boolean(manualTag),
     finalTag: computedTag,
     finalTagExists,
+    prefixSource: targetPrefixResult ? targetPrefixResult.prefixSource : 'package.json#tagPrefix',
+    targetPrefixes: targetPrefixResult ? targetPrefixResult.targetPrefixes : [],
     tagPrefixes,
     packageJson,
     packageJsonRaw,
     packageJsonPath,
+    currentBranch,
     warnings,
+    problems,
   };
 }
 
 function buildActions(context) {
   const actions = [];
 
+  if (context.problems.length > 0) {
+    return actions;
+  }
+
   if (context.editPkg) {
     actions.push('Update package.json#tag');
     actions.push('git add package.json');
     actions.push("git commit -m 'chore(release): update package.json#tag' --no-verify");
+  }
+
+  if (context.pushBranch) {
+    actions.push(`git push ${context.remote} HEAD:refs/heads/${context.currentBranch || '<current-branch>'}`);
   }
 
   actions.push(`git tag ${context.finalTag}`);
@@ -360,6 +418,213 @@ function buildTag({ prefix, versionType, suffix, tags }) {
   }
 
   return `${prefix}${version}${suffix}`;
+}
+
+function buildTargetTag({ prefix, suffix, tags, problems }) {
+  if (problems.length > 0) {
+    return '';
+  }
+
+  const version = tags.length === 0 ? '0.0.0' : nextRolloverVersion(latestTag(tags));
+  return `${prefix}${version}${suffix}`;
+}
+
+function nextRolloverVersion(version) {
+  const parts = version.split('.').map((item) => Number(item));
+  let [major, minor, patch] = parts;
+
+  if (patch < 100) {
+    patch += 1;
+  } else if (minor < 100) {
+    minor += 1;
+    patch = 0;
+  } else {
+    major += 1;
+    minor = 0;
+    patch = 0;
+  }
+
+  return [major, minor, patch].join('.');
+}
+
+function resolveTargetPrefix({ cwd, packageJson, target, tags, explicitPrefix, manualTag }) {
+  const targetTags = resolveTargetTags(tags, target);
+  const targetPrefixes = Object.keys(targetTags).sort();
+  const explicit = explicitPrefix || inferTargetPrefix(manualTag, target);
+
+  if (explicit) {
+    if (!explicit.endsWith(`-${target}-v`)) {
+      return {
+        prefix: explicit,
+        prefixSource: 'explicit',
+        targetPrefixes,
+        problems: [`Prefix must end with -${target}-v for target ${target}: ${explicit}`],
+      };
+    }
+
+    return {
+      prefix: explicit,
+      prefixSource: 'explicit',
+      targetPrefixes,
+      problems: [],
+    };
+  }
+
+  const packageTagAbbreviation = inferDeploymentAbbreviation(packageJson.tag);
+  if (packageTagAbbreviation) {
+    return {
+      prefix: `${packageTagAbbreviation}-${target}-v`,
+      prefixSource: 'package.json#tag',
+      targetPrefixes,
+      problems: [],
+    };
+  }
+
+  const tagPrefixResult = resolvePackageTagPrefixAbbreviation(packageJson.tagPrefix || [], target);
+  if (tagPrefixResult.problems.length > 0) {
+    return {
+      prefix: '',
+      prefixSource: 'ambiguous-package.json#tagPrefix',
+      targetPrefixes,
+      problems: tagPrefixResult.problems,
+    };
+  }
+
+  if (tagPrefixResult.abbreviation) {
+    return {
+      prefix: `${tagPrefixResult.abbreviation}-${target}-v`,
+      prefixSource: 'package.json#tagPrefix',
+      targetPrefixes,
+      problems: [],
+    };
+  }
+
+  if (targetPrefixes.length === 1) {
+    return {
+      prefix: targetPrefixes[0],
+      prefixSource: 'existing-tag',
+      targetPrefixes,
+      problems: [],
+    };
+  }
+
+  if (targetPrefixes.length > 1) {
+    return {
+      prefix: '',
+      prefixSource: 'ambiguous-existing-tags',
+      targetPrefixes,
+      problems: [`Multiple tag prefixes exist for ${target}: ${targetPrefixes.join(', ')}`],
+    };
+  }
+
+  const abbreviation = projectAbbreviation(path.basename(cwd) || packageJson.name);
+  return {
+    prefix: `${abbreviation}-${target}-v`,
+    prefixSource: 'repository-directory',
+    targetPrefixes,
+    problems: [],
+  };
+}
+
+function inferTargetPrefix(tag, target) {
+  if (!tag) {
+    return '';
+  }
+
+  const match = String(tag).match(/^(.+-(dev|prod)-v)\d+\.\d+\.\d+/);
+  if (!match || match[2] !== target) {
+    return '';
+  }
+
+  return match[1];
+}
+
+function inferDeploymentAbbreviation(tag) {
+  if (!tag) {
+    return '';
+  }
+
+  const match = String(tag).match(/^(.+)-(dev|prod)-v\d+\.\d+\.\d+/);
+  return match ? match[1] : '';
+}
+
+function resolvePackageTagPrefixAbbreviation(tagPrefixes, target) {
+  const abbreviations = [];
+
+  for (const item of tagPrefixes) {
+    if (typeof item !== 'string' || !item.trim()) {
+      continue;
+    }
+
+    const value = item.trim();
+    const deploymentPrefix = value.match(/^(.+)-(dev|prod)-v$/);
+    if (deploymentPrefix) {
+      abbreviations.push(deploymentPrefix[1]);
+      continue;
+    }
+
+    if (!value.includes('-') && !value.endsWith('-v')) {
+      abbreviations.push(value);
+    }
+  }
+
+  const unique = [...new Set(abbreviations)];
+  return {
+    abbreviation: unique.length === 1 ? unique[0] : '',
+    problems: unique.length > 1
+      ? [`Multiple package.json#tagPrefix abbreviations exist: ${unique.join(', ')}`]
+      : [],
+  };
+}
+
+function resolveTargetTags(tags, target) {
+  const result = {};
+  const pattern = /^(.+-(dev|prod)-v)(\d+\.\d+\.\d+)$/;
+
+  for (const tag of tags) {
+    const match = tag.match(pattern);
+    if (!match || match[2] !== target) {
+      continue;
+    }
+
+    const [, prefix, , versionNumber] = match;
+    if (!result[prefix]) {
+      result[prefix] = [];
+    }
+
+    result[prefix].push(versionNumber);
+  }
+
+  return result;
+}
+
+function projectAbbreviation(name) {
+  const normalized = String(name)
+    .replace(/^@[^/]+\//, '')
+    .toLowerCase();
+  const parts = normalized
+    .split(/[^a-z0-9]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`;
+  }
+
+  const compact = (parts[0] || normalized).replace(/[^a-z0-9]/g, '');
+  return compact.slice(0, 2).padEnd(2, compact[0] || 'x');
+}
+
+function normalizeTarget(value) {
+  if (value === undefined || value === true || value === '') {
+    return '';
+  }
+
+  if (value !== 'dev' && value !== 'prod') {
+    throw new Error(`Unsupported target: ${value}`);
+  }
+
+  return value;
 }
 
 function inferPrefix(tag, tagPrefixes) {

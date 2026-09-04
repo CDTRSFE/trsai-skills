@@ -73,11 +73,12 @@ cp /path/to/trsai-skills/AGENTS.md ~/.codex/AGENTS.md
 | `css-patterns` | 任意页面或组件样式编写/调整、样式覆盖、局部布局、响应式、z-index、UnoCSS 与 CSS/Less 取舍 |
 | `form-validation` | 新增/编辑表单、表单提交、校验规则（Ant Design Vue / Vant） |
 | `git-tag-release` | 打 tag、发版、推 RC tag、管理 package.json tag 前缀 |
+| `gitlab-merge-request` | 推送当前源分支并创建 GitLab MR，默认目标分支 `master`、默认分配给 `puyuchun` |
 | `deployment-skill` | 通过项目根目录 `deploy.json` 执行部署、构建、镜像更新，按 provider 路由 Jenkins / Apollo / ArgoCD 规则 |
 | `jira-git-workflow` | Jira 任务完成后的 commit/push 收尾：根据 Jira 截图或文字生成 `feat`/`fix` 提交信息，提交和推送前都必须确认 |
 | `pinia-store-design` | 决定是否建 store、设计 store 结构、跨组件状态共享 |
 | `vue-component-design` | 设计新组件、重构组件、组件拆分策略 |
-| `trs-code-review` | TRS 前端代码审查、提交前检查、MR/PR 前检查、完成验收 |
+| `trs-code-review` | TRS 前端代码审查、提交前检查、GitLab MR 前检查、完成验收 |
 
 ## 标准开发流程
 

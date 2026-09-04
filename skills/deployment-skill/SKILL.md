@@ -47,7 +47,7 @@ Use `provider` to choose the provider reference:
 - `argocd`: read [providers/argocd.md](providers/argocd.md).
 - Unknown provider: stop and say the configured provider is not supported yet.
 
-If the user selects Apollo, continue with the Apollo provider rules in this skill. If the user selects Jenkins, treat TRS Jenkins deployments as `git-tag` deployments by default and collect the minimum missing information needed for the selected target. Do not try to rediscover whether Jenkins should be triggered by a Git tag or called directly on every deployment. Only use direct Jenkins triggering when `deploy.json` explicitly sets `trigger: "jenkins-build"` for the selected target or the user explicitly says to start Jenkins directly. For Jenkins `git-tag` projects, one exact Jenkins job URL is usually enough to start configuration when `package.json#tagPrefix` and a Git remote already exist.
+If the user selects Apollo, continue with the Apollo provider rules in this skill. If the user selects Jenkins, treat TRS Jenkins deployments as `git-tag` deployments by default and collect the minimum missing information needed for the selected target. Do not try to rediscover whether Jenkins should be triggered by a Git tag or called directly on every deployment. Only use direct Jenkins triggering when `deploy.json` explicitly sets `trigger: "jenkins-build"` for the selected target or the user explicitly says to start Jenkins directly. For Jenkins `git-tag` projects, one exact Jenkins job URL is usually enough to start configuration when a Git remote already exists; tag naming rules live in the `git-tag-release` skill, not in `deploy.json`.
 
 When asking for one missing Jenkins job URL, do not print a summary of inferred fields such as target, trigger, remote, tag prefix, version type, `editPkg`, or application name. Ask directly and keep example URLs clickable with Markdown links:
 
@@ -80,11 +80,16 @@ When executing a user action, read the selected workflow file and provider refer
 - Do not ask for copied browser headers as the normal path. Prefer configured credentials, tokens, API sessions, or a documented provider authentication path.
 - Redact raw build/deploy logs before showing them. At minimum mask authorization headers, cookies, tokens, passwords, and `docker login ... -p <value>`.
 - When `deploy.json` is created or changed by this deployment workflow and the deployment or image update succeeds, automatically commit only the `deploy.json` change and push it to the current branch's remote. Do not include unrelated files in that commit.
+- For Jenkins `git-tag` deployments, do not write tag naming rules such as tag prefix, version type, or rollover policy into `deploy.json`. Pass the selected target (`dev` or `prod`) to `git-tag-release` and let that skill discover existing tags, infer the prefix, and calculate the next tag.
+- Before pushing a deployment tag, check whether the project already has runtime tag output capability, such as console output, a visible diagnostic area, or another project-local mechanism that exposes the built `package.json#tag`/build tag at runtime. If it is missing, explain that the final image will not be easy to verify, ask for confirmation, then add the smallest project-consistent tag output code, commit it, and push the branch before previewing or pushing the deployment tag.
+- If `git-tag-release` creates a `package.json#tag` release commit during deployment, ensure the current branch commit is pushed to the remote before or along with the tag push. The deployment tag should point at a commit that can be found from the remote branch history whenever the branch can be pushed.
 - If Git is unavailable, the project is not a Git repository, no upstream/remote can be determined, or the push fails, do not treat the deployment as failed. Report the deployment success and the Git follow-up problem separately.
 
 ## Reporting
 
 Successful deployment reports should stay concise and user-facing:
+
+For Apollo success reports, always include an access URL derived from the selected target and `environments.<target>.applicationName`: `dev` uses `https://ys.dev.trs/<applicationName>/`, and `prod` uses `https://ys.test.trs/<applicationName>/`.
 
 ```text
 部署完成：<project> / <environment>
@@ -92,8 +97,17 @@ Successful deployment reports should stay concise and user-facing:
 构建状态：SUCCESS
 打镜像耗时：<duration>
 
+Tag：
+<tag>
+
+Commit：
+<commit>
+
 镜像：
 <full image>
+
+Jenkins：
+<build URL>
 
 <环境名称>已同步：
 <previous short image> 变更为 <new short image>

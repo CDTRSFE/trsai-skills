@@ -18,7 +18,7 @@ For the selected target, require one of:
 - `jobUrl`: full Jenkins job URL.
 - `jobName` plus top-level `jenkinsUrl`.
 
-For Jenkins deployments in TRS-style projects, default to `trigger: "git-tag"` unless `deploy.json` explicitly says `trigger: "jenkins-build"` for the selected target or the user says Jenkins should be started directly. Do not rediscover or re-explain the trigger mode for every deployment when `trigger` is omitted; omission means the team default, `git-tag`. In this mode, the required user-supplied deployment address is usually just the exact Jenkins job URL.
+For Jenkins deployments in TRS-style projects, default to `trigger: "git-tag"` unless `deploy.json` explicitly says `trigger: "jenkins-build"` for the selected target or the user says Jenkins should be started directly. Do not rediscover or re-explain the trigger mode for every deployment when `trigger` is omitted; omission means the team default, `git-tag`. In this mode, the required user-supplied deployment address is usually just the exact Jenkins job URL; tag naming and rollover rules are handled by `git-tag-release`, not by `deploy.json`.
 
 Recommended fields:
 
@@ -173,22 +173,21 @@ Required selected-target fields:
 
 - `trigger: "git-tag"`
 - `remote`
-- `tagPrefix`
-- `versionType`
-- `editPkg`
 - `jobUrl` or `jobName` plus top-level `jenkinsUrl`
 
 Defaults and inference:
 
 - `dev` means `开发环境`; `prod` means `生产环境`.
 - `remote`: use `origin` when it exists and the target does not configure another remote.
-- `versionType`: default to `patch` unless the user asks for `major`, `minor`, or `RC`.
-- `editPkg`: default to `true`.
-- `tagPrefix`: infer from `package.json#tagPrefix`. For `dev`, prefer the prefix containing `dev`; for `prod`, prefer the prefix containing `prod`. If exactly one matching prefix exists, use it without asking. If multiple match or none match, ask the user to choose.
-- Existing tags are handled by `git-tag-release`; do not manually calculate the next tag. Let the script fetch tags and iterate from the latest matching version for the chosen prefix.
+- `editPkg`: use `true` for deployment tags so `package.json#tag` records the exact build tag.
+- `pushBranch`: use `true` when `editPkg=true` or when runtime tag output code was added, so the remote branch can find the commit that the pushed tag points to.
+- Tag prefix, environment split, and version rollover are handled by `git-tag-release` with `--target dev|prod`. Do not store `tagPrefix`, `versionType`, or rollover policy in `deploy.json`.
+- Existing tags are handled by `git-tag-release`; do not manually calculate the next tag. Let the script fetch tags, use a unique existing `<abbr>-<target>-v` prefix when present, ask the user to choose if multiple target prefixes exist, and create the first `<abbr>-<target>-v0.0.0` tag only when the target has no history.
 - `imagePattern`: use when configured. If it is missing, first try to infer the produced project image from the correlated successful build log; ask only when no confident single project image can be identified.
 
-Use the `git-tag-release` skill for tag creation. Always preview first, show the final tag and actions to the user, and execute only after the user confirms. Do not hand-write the tag calculation or push sequence.
+Before tag creation, verify whether the project has runtime tag output capability. Accept project-consistent mechanisms such as console output, a visible diagnostic field, or a locally established build-info component that exposes the built `package.json#tag` or equivalent build tag. If missing, explain the traceability gap, ask the user to confirm the code change, add the smallest matching implementation, commit it, and push the branch before creating the deployment tag. The deployment tag must point to code that can output that same tag at runtime.
+
+Use the `git-tag-release` skill for tag creation. Always preview with the selected target first, show the final tag, prefix source, whether `package.json#tag` will be committed, and whether the current branch will be pushed. Execute only after the user confirms. Do not hand-write the tag calculation or push sequence.
 
 After the tag push succeeds:
 

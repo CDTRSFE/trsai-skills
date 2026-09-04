@@ -1,6 +1,6 @@
 ---
 name: trs-code-review
-description: 在用户要求 TRS 前端代码审查、提交前检查、MR/PR 检查、完成验收，或需要按团队 Vue、TypeScript、样式、接口、表单、Store、Git 规范检查改动时使用。
+description: 在用户要求 TRS 前端代码审查、提交前检查、GitLab MR 检查、完成验收，或需要按团队 Vue、TypeScript、样式、接口、表单、Store、Git 规范检查改动时使用。
 ---
 
 # TRS 前端代码审查
@@ -12,7 +12,7 @@ description: 在用户要求 TRS 前端代码审查、提交前检查、MR/PR �
 ## 触发场景
 
 - 用户要求 review / code review / 代码审查 / 帮我看看问题。
-- 提交前、MR/PR 前、合并前、发版前检查。
+- 提交前、GitLab MR 前、合并前、发版前检查。
 - 完成开发后需要验收是否符合团队规范。
 - 需要把多个领域规范合并成一份审查结果。
 
@@ -86,9 +86,9 @@ description: 在用户要求 TRS 前端代码审查、提交前检查、MR/PR �
 - 涉及页面、组件、样式、交互、接口联调或性能问题的改动，是否已按 plan 使用当前环境可用的浏览器插件或 MCP 浏览器工具完成运行时验证，并说明页面路径、核心操作、Console/Network/布局结果。
 - 纯文档、纯类型、脚本配置、无 UI/运行时影响的改动，可不要求浏览器验证，但需要说明判断理由。
 - 是否保留用户已有改动，没有还原无关文件；若工作区有无关改动，应明确本次只检查任务相关 diff。
-- 开发完成后是否先询问用户是否提交本次修改；用户明确确认前，不得执行 `git add`、`git commit`、`git push` 或创建 PR。
+- 开发完成后是否先询问用户是否提交本次修改；用户明确确认前，不得执行 `git add`、`git commit`、`git push` 或创建 MR。
 - 提交信息是否符合 Conventional Commits。
-- MR/PR 描述是否包含改动内容、影响范围、验证方式和风险点。
+- GitLab MR 描述是否包含改动内容、影响范围、验证方式和风险点。
 
 ## 输出格式
 
@@ -114,5 +114,5 @@ description: 在用户要求 TRS 前端代码审查、提交前检查、MR/PR �
 - 标准流程中，本技能位于 `trs-development-preflight -> brainstorming -> writing-plans -> 执行 -> 浏览器运行时验证 -> review` 的最后一步，负责检查实际 diff 是否符合 TRS 前端规范。
 - TRS 开发任务的分析、计划和验证流程由 Superpowers 负责；本技能只做 TRS 前端收尾审查。
 - `writing-plans` 阶段应已按任务类型结合 `api-integration`、`form-validation`、`pinia-store-design`、`vue-component-design`、`css-patterns` 等领域技能；本技能负责收尾验收，不重新替代实施计划。
-- 完成开发后，先按 `superpowers:verification-before-completion` 做验证，再用本技能做 TRS 规范审查；审查结束后必须询问用户是否提交本次修改，用户明确确认前不得提交、推送或创建 PR。
+- 完成开发后，先按 `superpowers:verification-before-completion` 做验证，再用本技能做 TRS 规范审查；审查结束后必须询问用户是否提交本次修改，用户明确确认前不得提交、推送或创建 MR。
 - 用户明确要求 code review 时，可配合 `superpowers:requesting-code-review`，但本技能负责 TRS 前端检查项。

@@ -19,7 +19,7 @@ refactor: 拆分列表页表单逻辑
 style: 调整按钮间距
 ```
 
-## MR / PR 说明
+## GitLab MR 说明
 
 建议包含：
 
