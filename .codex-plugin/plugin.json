@@ -32,7 +32,7 @@
       "用 TRS Code Review 检查本次改动",
       "按 deploy.json 部署当前项目",
       "这个 Jira 做完了，按团队格式提交并确认是否推送远程",
-      "提交 MR 到 master，并分配给 puyuchun"
+      "提交 MR 到 master，并分配给 pu.yuchun"
     ],
     "brandColor": "#1677FF"
   }
