@@ -9,7 +9,11 @@ description: Use when onboarding a new frontend project to TRS Apollo, especiall
 
 把一个已有代码仓库从“尚未接入 Apollo”推进到“开发环境可访问”，覆盖流水线、首个镜像、拓扑资源、项目 Nginx 和共享入口。每个写操作都必须先发现、再确认、再回读验证。
 
-**REQUIRED SUB-SKILL:** 使用 `trs-apollo` 完成 Apollo 认证、系统发现、流水线、镜像、拓扑和 Pod API 操作。本 Skill 只补充“新工程端到端接入”流程，不复制基础 API 文档。
+**REQUIRED SUB-SKILL:** 使用仓库内的 [deployment-skill](../deployment-skill/SKILL.md)，并读取其 [Apollo provider](../deployment-skill/providers/apollo.md)，复用 Apollo 认证、目标环境选择、流水线构建、镜像同步及状态轮询规则。本 Skill 补充新工程的流水线、拓扑资源和共享入口创建流程。
+
+首次接入时，流水线或拓扑可能尚不存在：先确认待创建的精确名称，通过本 Skill 的创建流程保存并回读资源，再按 [配置 schema](../deployment-skill/config-schema.json) 补齐项目根目录 `deploy.json` 的 `environments.<target>`。不能要求用户提供尚不存在的流水线，也不能将创建步骤交给只处理已有资源的常规部署流程。首次构建使用用户确认的 ref；后续常规部署交给 `deployment-skill`。
+
+本 Skill 的阶段授权、禁止浏览器、共享 Nginx 回滚和 Pod/Service 验收要求适用于整个首次接入流程；Apollo provider 中的浏览器认证兜底、常规部署默认授权和简化验收不替代这些要求。
 
 本 Skill 仅使用命令行和已确认的 Apollo API，不依赖额外的 Git Skill。不调用浏览器 Skill、浏览器 MCP 或浏览器 CLI，不打开 Apollo 页面，不执行页面登录、抓包或切换浏览器；认证、接口发现、创建、部署和验收均遵守此边界。凭据或接口资料不足时，报告缺口并暂停相关步骤，补齐并验证后再继续。
 
@@ -23,7 +27,7 @@ description: Use when onboarding a new frontend project to TRS Apollo, especiall
 
 1. **先只读发现。** 确认仓库、Apollo 系统、命名空间、同名流水线、同名拓扑、镜像仓库、共享 Nginx 应用和当前配置。
 2. **确认目标后再写。** 至少向用户汇报系统、项目名、分支或 tag、构建命令、Node 版本、镜像名、拓扑名、访问路径及所有歧义。
-3. **分阶段授权。** 创建/修改流水线、触发构建、部署镜像、进入容器 shell、修改共享 Nginx 分别遵守 `trs-apollo` 的确认规则；前一步授权不自动覆盖后一步。
+3. **分阶段授权。** 创建/修改流水线、触发构建、部署镜像、进入容器 shell、修改共享 Nginx 分别按本 Skill 的阶段要求确认；已有流水线构建和镜像同步同时遵守 `deployment-skill` 的确认配置；前一步授权不自动覆盖后一步。
 4. **不存凭据。** Skill、项目文件、日志和最终回复中不得写入完整 Token、Cookie、登录密文或其他凭据。
 5. **先确认接口契约。** 创建前，从 API 参考、已验证的请求记录或用户提供的接口资料核对请求方法、路径、必填字段和回读方式。信息不足时报告已确认内容与缺失信息，暂停依赖该接口的步骤；不猜接口，不转向浏览器或页面表单。
 6. **每次写后回读。** 创建后读详情，构建后读日志和镜像，部署后读 Pod，上传 Nginx 后重新下载并比较内容。
@@ -35,7 +39,7 @@ description: Use when onboarding a new frontend project to TRS Apollo, especiall
 | 输入 | 获取方式 |
 | --- | --- |
 | Git 仓库与远端 | `git rev-parse --show-toplevel`、`git remote get-url origin` |
-| Apollo 系统/命名空间 | 用户指定；未指定时按 `trs-apollo` 默认系统发现 |
+| Apollo 系统/命名空间 | 用户指定；未指定时按 `deployment-skill` 的 Apollo 目标环境规则选择 `dev`，精确匹配系统 code/命名空间 |
 | 项目标识 | 用户确认的流水线名、镜像名、拓扑 `appName` |
 | 展示名 | 用户确认的拓扑 `projectName`，不要默认等于 `appName` |
 | 构建 ref | 明确分支或裸 tag，并配套正确 `gitPullMethod` |
@@ -82,7 +86,7 @@ description: Use when onboarding a new frontend project to TRS Apollo, especiall
 - 查同名拓扑；存在时核对真实应用，不重复创建。
 - 新建应用后创建 Deployment 和 Service：镜像使用本次构建的完整 URL，Service 名保持稳定，端口映射与容器监听一致。
 - 通过 `deployByImage` API 部署精确镜像；轮询部署状态和 Pod，必须达到 `Running`、期望 Ready 数和正确镜像。
-- 记录 `appId`、资源状态、Service DNS、镜像和 Pod；写入 `trs-apollo/state/repository-map.json` 前先完成实际验证。
+- 记录 `appId`、资源状态、Service DNS、镜像和 Pod；验证后将稳定部署字段写入项目根目录 `deploy.json` 的当前环境，临时状态保留在本次验收记录中。
 
 ### 6. 配置共享 PUBLIC Nginx
 
@@ -104,7 +108,7 @@ description: Use when onboarding a new frontend project to TRS Apollo, especiall
 
 | 情况 | 处理 |
 | --- | --- |
-| 会话缓存缺失或 API 明确返回会话失效 | 按 `trs-apollo` 读取钥匙链凭据并调用登录 API，重新验证后继续 |
+| 会话缓存缺失或 API 明确返回会话失效 | 按 `deployment-skill` 的 Apollo provider 从环境变量或本地私密文件读取凭据，调用登录 API 并重新验证；失败时暂停，不使用浏览器兜底 |
 | 登录凭据缺失、无法读取或 API 登录失败 | 报告脱敏错误并暂停依赖认证的步骤，不转向浏览器 |
 | 创建或资源接口契约缺失 | 报告缺失的方法、路径、字段或回读方式，暂停相关步骤，不使用页面兜底 |
 | 同名流水线/拓扑有多个 | 停止，向用户展示候选并确认 |

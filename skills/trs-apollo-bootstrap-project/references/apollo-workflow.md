@@ -1,6 +1,6 @@
 # Apollo 流水线与拓扑工作流
 
-本流程仅通过命令行和已确认的 Apollo API 执行，不调用浏览器或操作页面。认证失败按 `trs-apollo` 的 API 登录与失败处理规则执行；接口契约缺失时报告缺口并暂停相关步骤，不使用页面登录、抓包或表单兜底。
+本流程仅通过命令行和已确认的 Apollo API 执行，不调用浏览器或操作页面。认证按 [deployment-skill 的 Apollo provider](../../deployment-skill/providers/apollo.md) 的环境变量、本地私密文件和 API 登录规则执行；失败时暂停，不使用其浏览器认证兜底；接口契约缺失时报告缺口并暂停相关步骤，不使用页面登录、抓包或表单兜底。
 
 ## 目录
 
@@ -9,7 +9,7 @@
 3. 首次构建
 4. 拓扑应用与资源
 5. 部署和验证
-6. 仓库映射
+6. 部署配置回写
 7. 常见错误
 
 ## 1. 仓库与系统发现
@@ -25,11 +25,11 @@ git log -1 --oneline
 
 检查 `package.json`、锁文件、构建配置、`nginx.conf`、Dockerfile 和构建产物目录。用 `rg` 定位 Vite `base`、部署路径和现有项目名，避免复制参考项目的旧名称。
 
-随后按 `trs-apollo` 完成：
+随后按 [deployment-skill 的 Apollo provider](../../deployment-skill/providers/apollo.md) 和本 Skill 的首次创建流程完成：
 
-1. 验证登录缓存。
+1. 从环境变量或本地私密文件加载凭据，完成 API 登录预检。
 2. 查询系统列表并选择用户确认的系统。
-3. 读取 `state/repository-map.json`；仅使用当前系统节点。
+3. 读取项目根目录 `deploy.json` 的 `environments.<target>`；不存在时先确认待创建的流水线和拓扑名称，再按本流程创建，得到实际资源字段后补齐当前环境配置。
 4. 搜索同名流水线、同名拓扑和镜像仓库。
 5. 若用户给出参考项目，读取其完整流水线配置，但重新发现连接 ID、命名空间和目标名称。
 
@@ -196,23 +196,16 @@ Content-Type: application/json;charset=UTF-8
 
 Pod 名属于短期状态，记录时注明时间，不把它当下一次操作目标。
 
-## 6. 仓库映射
+## 6. 部署配置回写
 
-全部验证后，按 `trs-apollo` 的层级更新：
+全部验证后，按 [deployment-skill 配置 schema](../../deployment-skill/config-schema.json) 和 [Apollo provider](../../deployment-skill/providers/apollo.md) 更新项目根目录 `deploy.json`：
 
-```text
-repositories[repoKey].systems[systemCode]
-```
+- 顶层设置 `provider: "apollo"`，按配置规范填写 `defaultTarget`、`apolloUrl`、`apiBaseUrl` 和确认开关。
+- 只新增或更新 `environments.<target>`，保留其他环境；同时存在时按 `dev`、`prod` 排序。
+- 从实际资源回读 `envName`、`namespace`、`pipelineName`、`jobName`、`jenkinsId`、`applicationName`、`imagePattern`、`syncImage`、`appId`、`resourceType`，不照抄示例 ID。
+- ref、构建号、当前完整镜像、Pod/Service 状态及验证时间放在本次验收记录中，不作为下一次操作的固定目标。
 
-记录：
-
-- 系统名、code、ID
-- 流水线 ID、名称、Jenkins/GitLab、ref 类型和值
-- 拓扑 `appId`、`appName`、`projectName`
-- 当前完整镜像
-- `updatedAt`
-
-不要把 PUBLIC Nginx 应用写成业务仓库的拓扑映射；它是共享基础设施，只在操作记录中引用。
+PUBLIC Nginx 是共享基础设施，只在操作记录中引用，不覆盖业务应用的 `applicationName` 或 `appId`。配置提交与推送遵守用户当前授权和仓库 Git 规则。
 
 ## 7. 常见错误
 

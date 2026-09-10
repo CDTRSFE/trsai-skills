@@ -93,7 +93,7 @@ http {
 
 ## 3. 容器文件 API
 
-认证头遵循 `trs-apollo`，使用 PUBLIC 系统的 `System-Id`。以下是已验证的文件操作形态。
+认证头遵循 [deployment-skill 的 Apollo provider](../../deployment-skill/providers/apollo.md) 的 API 登录规则，使用 PUBLIC 系统的 `System-Id`。以下是已验证的文件操作形态。
 
 ### 3.1 列目录
 
@@ -155,7 +155,7 @@ ws://<apollo-host>/devops/container/terminal
   &rows=40
 ```
 
-通过命令行客户端连接上述 WebSocket。Token 只从 `trs-apollo` 指定的钥匙链会话读取，不打印、不写入脚本或 Skill。终端消息采用以下已确认协议：
+通过命令行客户端连接上述 WebSocket。Token 只从按 `deployment-skill` 的 Apollo provider 完成并验证的当前 API 登录会话中读取，不打印、不写入脚本或 Skill。终端消息采用以下已确认协议：
 
 ```json
 {"o":"keepAlive","command":true}

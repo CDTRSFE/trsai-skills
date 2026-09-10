@@ -139,7 +139,7 @@ meishan-fx-map-85688f5ff9-gn27f  Running  1/1
 | 业务镜像 | 与流水线产物一致 |
 | Git `master` | 本地/远端均为 `0b50064` |
 
-`trs-apollo/state/repository-map.json` 已记录流水线 ID `72`、拓扑 `appId` `310`、构建 ref 和当前镜像。PUBLIC Nginx 是共享基础设施，没有作为业务仓库拓扑写入该映射。
+历史交付记录包含流水线 ID `72`、拓扑 `appId` `310`、构建 ref 和当前镜像，仅供理解示例，不代表当前状态。现在执行时，按 [deployment-skill](../../deployment-skill/SKILL.md) 将经回读验证的稳定部署字段写入项目根目录 `deploy.json` 的当前环境；构建 ref 和镜像留在验收记录中。PUBLIC Nginx 是共享基础设施，不作为业务应用写入该配置。
 
 ## 本实例验证出的关键顺序
 
