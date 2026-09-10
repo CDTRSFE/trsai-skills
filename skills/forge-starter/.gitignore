@@ -1,0 +1,15 @@
+reference-projects/
+node_modules/
+demos/
+
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+coverage/
+dist/
+out/
+.cache/
+.release-artifacts/
+.worktrees/

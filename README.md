@@ -69,6 +69,7 @@ cp /path/to/trsai-skills/AGENTS.md ~/.codex/AGENTS.md
 | 技能 | 触发场景 |
 |------|---------|
 | `trs-development-preflight` | 开发前置检查，判断流程边界、补齐必要上下文，并声明后续 Superpowers 流程和 writing-plans 要结合的 TRS skills |
+| `forge-starter` | 创建、初始化 Vue/Vite 前端项目，使用 TRS vite-tpl 模板 |
 | `api-integration` | 封装 HTTP 请求、设计 API 层、处理错误和加载状态 |
 | `css-patterns` | 任意页面或组件样式编写/调整、样式覆盖、局部布局、响应式、z-index、UnoCSS 与 CSS/Less 取舍 |
 | `form-validation` | 新增/编辑表单、表单提交、校验规则（Ant Design Vue / Vant） |

@@ -15,6 +15,7 @@
       "strict": false,
       "skills": [
         "./skills/trs-development-preflight",
+        "./skills/forge-starter",
         "./skills/api-integration",
         "./skills/css-patterns",
         "./skills/form-validation",
