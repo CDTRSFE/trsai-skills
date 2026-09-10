@@ -4,14 +4,14 @@ import path from 'node:path'
 
 const args = process.argv.slice(2)
 const shouldForce = args.includes('--force')
+const checkOnly = args.includes('--check')
 const projectArg = args.find((arg) => !arg.startsWith('--'))
 const cwd = projectArg ? path.resolve(projectArg) : process.cwd()
 const indexFile = path.resolve(cwd, 'docs/component-map.md')
 
-const includeRoots = [
-  { dir: path.join(cwd, 'src/components'), scope: '公共组件' },
-  { dir: path.join(cwd, 'src/views'), scope: '页面局部组件' },
-]
+if (!fs.existsSync(path.join(cwd, 'src')) || !fs.statSync(path.join(cwd, 'src')).isDirectory()) {
+  throw new Error(`项目缺少 src/ 目录，请确认项目根目录：${cwd}；未写入索引。`)
+}
 
 function walkVueFiles(dir) {
   if (!fs.existsSync(dir)) return []
@@ -263,62 +263,134 @@ const rows = [
   ...viewFiles.map((file) => inspect(file, '页面局部组件')),
 ].sort((a, b) => b.refs.length - a.refs.length || b.templateUseCount - a.templateUseCount || a.path.localeCompare(b.path))
 
-const now = new Date().toISOString().slice(0, 10)
-function buildLines() {
-  const lines = []
-  lines.push('# 组件图谱索引')
-lines.push('')
-lines.push(`> 生成日期：${now}`)
-lines.push('> 扫描范围：`src/components/**/*.vue`、`src/views/**/components/**/*.vue`。')
-lines.push('> 本文件是项目正式组件索引；后续 UI / 组件开发前先读取，开发后同步更新。')
-lines.push('')
-lines.push('## 公共组件')
-lines.push('')
-lines.push('| 组件 | 路径 | 用途 | Props | Emits | 引用文件数 | 模板使用次数 | 引用位置 |')
-lines.push('| --- | --- | --- | --- | --- | --- | --- | --- |')
-for (const item of rows.filter((row) => row.scope === '公共组件')) {
-  lines.push(`| ${escapeCell(item.name)} | \`${escapeCell(item.path)}\` | ${escapeCell(item.summary)} | ${escapeCell(item.props)} | ${escapeCell(item.emits)} | ${item.refs.length} | ${item.templateUseCount} | ${escapeCell(item.refs.join('<br>') || '-')} |`)
-}
-lines.push('')
-lines.push('## 页面局部组件')
-lines.push('')
-lines.push('| 组件 | 路径 | 所属 view | 用途 | Props | Emits | 引用文件数 | 模板使用次数 | 引用位置 | 是否建议公共化 |')
-lines.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
-for (const item of rows.filter((row) => row.scope === '页面局部组件')) {
-  const promote = item.refs.length >= 2 ? '建议评估' : '否'
-  lines.push(`| ${escapeCell(item.name)} | \`${escapeCell(item.path)}\` | ${escapeCell(item.view)} | ${escapeCell(item.summary)} | ${escapeCell(item.props)} | ${escapeCell(item.emits)} | ${item.refs.length} | ${item.templateUseCount} | ${escapeCell(item.refs.join('<br>') || '-')} | ${promote} |`)
-}
-lines.push('')
-return lines
+const tableHeaders = {
+  公共组件: ['组件', '路径', '用途', 'Props', 'Emits', '引用文件数', '模板使用次数', '引用位置'],
+  页面局部组件: ['组件', '路径', '所属页面', '用途', 'Props', 'Emits', '引用文件数', '模板使用次数', '引用位置', '是否建议公共化'],
 }
 
+// 保留原始 Markdown 单元格，避免反引号、强调和转义竖线在合并时丢失。
+function splitCells(line) {
+  return line.trim().split(/(?<!\\)\|/).slice(1, -1).map(cell => cell.trim())
+}
+
+function readTables(content) {
+  const lines = content.split(/\r?\n/)
+  const tables = new Map()
+  let section = ''
+  let fence = null
+  for (let i = 0; i < lines.length; i++) {
+    const marker = lines[i].match(/^\s*(`{3,}|~{3,})/)
+    if (marker) {
+      if (!fence) fence = marker[1]
+      else if (marker[1][0] === fence[0] && marker[1].length >= fence.length) fence = null
+      continue
+    }
+    if (fence) continue
+    const heading = lines[i].match(/^##\s+(.+?)\s*$/)
+    if (heading) section = heading[1]
+    if (!Object.hasOwn(tableHeaders, section) || !lines[i].trim().startsWith('|')) continue
+    const header = splitCells(lines[i]).map(stripMarkdown)
+    if (!header.includes('组件') || !header.includes('路径')) continue
+    const separator = splitCells(lines[i + 1] || '')
+    if (separator.length !== header.length || !separator.every(cell => /^:?-+:?$/.test(cell))) {
+      throw new Error(`${section}表头分隔行无法识别，请先修复表格格式；未写入索引。`)
+    }
+    if (tables.has(section)) throw new Error(`${section}存在多个组件表格，请先合并；未写入索引。`)
+    const items = new Map()
+    let end = i + 2
+    while (end < lines.length && lines[end].trim().startsWith('|')) {
+      const cells = splitCells(lines[end])
+      if (cells.length !== header.length) throw new Error(`第 ${end + 1} 行列数不匹配；未写入索引。`)
+      const row = Object.fromEntries(header.map((name, index) => [name, cells[index]]))
+      const componentPath = stripMarkdown(row['路径'])
+      if (!componentPath.endsWith('.vue') || items.has(componentPath)) {
+        throw new Error(`第 ${end + 1} 行组件路径无效或重复；未写入索引。`)
+      }
+      items.set(componentPath, row)
+      end++
+    }
+    tables.set(section, { header, items, start: i, end })
+    i = end - 1
+  }
+  return { lines, tables }
+}
+
+function promotion(item) {
+  return item.refs.length >= 2 ? '建议评估' : '否'
+}
+
+function buildTable(scope, previous) {
+  const automatic = tableHeaders[scope]
+  const aliases = new Set(['引用次数', '所属 view'])
+  const extra = (previous?.header || []).filter(name => !automatic.includes(name) && !aliases.has(name))
+  const header = [...automatic, ...extra]
+  const lines = [`| ${header.join(' | ')} |`, `| ${header.map(() => '---').join(' | ')} |`]
+  for (const item of rows.filter(row => row.scope === scope)) {
+    const old = previous?.items.get(item.path) || {}
+    const oldSummary = old['用途']
+    const keepSummary = oldSummary && !['-', '待补充'].includes(oldSummary) && !oldSummary.includes('用途需结合源码确认')
+    const oldPromotion = old['是否建议公共化']
+    const keepPromotion = oldPromotion && !['-', '否', '建议评估'].includes(oldPromotion)
+    const cells = {
+      ...old,
+      组件: escapeCell(item.name),
+      路径: `\`${escapeCell(item.path)}\``,
+      所属页面: escapeCell(item.view),
+      用途: keepSummary ? oldSummary : escapeCell(item.summary),
+      Props: escapeCell(item.props),
+      Emits: escapeCell(item.emits),
+      引用文件数: String(item.refs.length),
+      模板使用次数: String(item.templateUseCount),
+      引用位置: item.refs.join('<br>') || '-',
+      是否建议公共化: keepPromotion ? oldPromotion : promotion(item),
+    }
+    lines.push(`| ${header.map(name => cells[name] || '-').join(' | ')} |`)
+  }
+  return lines
+}
+
+function buildIndex(content) {
+  if (!content) {
+    const now = new Date().toISOString().slice(0, 10)
+    return [
+      '# 组件图谱索引', '', `> 生成日期：${now}`,
+      '> 扫描范围：`src/components/**/*.vue`、`src/views/**/components/**/*.vue`。',
+      '> 本文件是项目正式组件索引；后续 UI / 组件开发前先扫描同步，开发后再次同步。', '',
+      ...Object.keys(tableHeaders).flatMap(scope => [`## ${scope}`, '', ...buildTable(scope), '']),
+      '## 设计稿拆组件记录', '',
+      '| 页面/需求 | 拆分结果 | 复用组件 | 新增组件 | 决策说明 |',
+      '| --- | --- | --- | --- | --- |', '',
+    ].join('\n')
+  }
+  const { lines, tables } = readTables(content)
+  // 只替换组件表格范围，章节说明和设计记录原样保留。
+  const edits = [...tables].map(([scope, previous]) => ({
+    start: previous.start, end: previous.end, lines: buildTable(scope, previous),
+  }))
+  for (const scope of Object.keys(tableHeaders)) {
+    if (tables.has(scope)) continue
+    const heading = lines.findIndex(line => line.trim() === `## ${scope}`)
+    if (heading >= 0) edits.push({ start: heading + 1, end: heading + 1, lines: ['', ...buildTable(scope), ''] })
+    else edits.push({ start: lines.length, end: lines.length, lines: ['', `## ${scope}`, '', ...buildTable(scope), ''] })
+  }
+  for (const edit of edits.sort((a, b) => b.start - a.start)) {
+    lines.splice(edit.start, edit.end - edit.start, ...edit.lines)
+  }
+  return lines.join(content.includes('\r\n') ? '\r\n' : '\n')
+}
 
 function parseExistingIndex(content) {
   const items = new Map()
-  const lines = content.split(/\r?\n/)
-  let header = null
-  for (const line of lines) {
-    if (!line.startsWith('|')) continue
-    const cells = line.split('|').slice(1, -1).map((cell) => stripMarkdown(cell))
-    if (cells.length < 2) continue
-    if (cells.every((cell) => /^-+$/.test(cell.replace(/\s/g, '')))) continue
-    if (cells.includes('组件') && cells.includes('路径')) {
-      header = cells
-      continue
+  for (const table of readTables(content).tables.values()) {
+    for (const [componentPath, row] of table.items) {
+      items.set(componentPath, {
+        name: stripMarkdown(row['组件']), path: componentPath,
+        summary: stripMarkdown(row['用途']),
+        refFileCount: Number(row['引用文件数'] || row['引用次数'] || 0),
+        templateUseCount: Number(row['模板使用次数'] || 0),
+        promote: stripMarkdown(row['是否建议公共化']),
+      })
     }
-    if (!header) continue
-    const row = {}
-    header.forEach((name, index) => { row[name] = cells[index] || '' })
-    const componentPath = row['路径']
-    if (!componentPath || componentPath === '路径') continue
-    items.set(componentPath, {
-      name: row['组件'] || path.basename(componentPath, '.vue'),
-      path: componentPath,
-      summary: row['用途'] || '',
-      refFileCount: Number(row['引用文件数'] || row['引用次数'] || 0),
-      templateUseCount: Number(row['模板使用次数'] || 0),
-      promote: row['是否建议公共化'] || '',
-    })
   }
   return items
 }
@@ -369,18 +441,22 @@ function printCompareReport() {
   console.log(`- 用途变化候选：${usageChanged.length ? usageChanged.join('；') : '无'}`)
   console.log(`- 新增公共组件候选/建议变化：${promoteChanged.length ? promoteChanged.join('；') : '无'}`)
   console.log(`- 新增/复用/改造记录是否已写入：${hasDesignRecord(content) ? '已存在记录，请结合本次需求确认是否补充最新记录' : '未发现有效记录，若本次涉及 UI/组件开发必须补充'}`)
-  console.log('提示：脚本不会自动覆盖已有正式索引；请根据以上差异更新 docs/component-map.md，或在回复中明确未更新原因。')
+  console.log('提示：用途和已说明原因的公共化判断会保留；请结合源码确认变化候选并更新结论。')
 }
 
-fs.mkdirSync(path.dirname(indexFile), { recursive: true })
-
-if (fs.existsSync(indexFile) && !shouldForce) {
-  console.log(`索引已存在，未覆盖：${path.relative(cwd, indexFile)}`)
-  printCompareReport()
+const exists = fs.existsSync(indexFile)
+const before = exists ? fs.readFileSync(indexFile, 'utf8') : ''
+const after = buildIndex(shouldForce ? '' : before)
+if (exists && !shouldForce) printCompareReport()
+const candidates = rows.filter(item => item.scope === '页面局部组件' && item.refs.length >= 2)
+console.log(`- 待核查公共化候选：${candidates.length ? candidates.map(item => `${item.name}（${item.path}，引用文件数 ${item.refs.length}）`).join('；') : '无'}`)
+if (checkOnly) {
+  console.log(`仅检查，未写入：${before === after ? '索引与扫描结果一致' : '索引需要同步（含表格排序/字段变化）'}`)
+} else if (before !== after) {
+  fs.mkdirSync(path.dirname(indexFile), { recursive: true })
+  fs.writeFileSync(indexFile, after, 'utf8')
+  console.log(`${!exists ? '已初始化' : shouldForce ? '已重新生成' : '已同步更新并排序'}组件索引：${path.relative(cwd, indexFile)}`)
 } else {
-  const lines = buildLines()
-  fs.writeFileSync(indexFile, lines.join('\n'), 'utf8')
-  console.log(`${shouldForce ? '已重新生成' : '已初始化'}组件索引：${path.relative(cwd, indexFile)}`)
+  console.log(`索引已是最新，未重复写入：${path.relative(cwd, indexFile)}`)
 }
-
 console.log(`公共组件：${publicFiles.length}，页面局部组件：${viewFiles.length}`)
