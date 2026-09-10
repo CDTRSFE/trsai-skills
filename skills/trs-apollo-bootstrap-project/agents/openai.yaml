@@ -1,0 +1,4 @@
+interface:
+  display_name: "TRS Apollo 新工程部署"
+  short_description: "在 TRS Apollo 中创建流水线、拓扑应用并配置开发环境 Nginx 入口"
+  default_prompt: "Use $trs-apollo-bootstrap-project to deploy a new frontend project through TRS Apollo from pipeline creation to public Nginx verification."

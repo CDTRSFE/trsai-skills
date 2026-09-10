@@ -21,6 +21,7 @@
         "./skills/form-validation",
         "./skills/git-tag-release",
         "./skills/gitlab-merge-request",
+        "./skills/trs-apollo-bootstrap-project",
         "./skills/deployment-skill",
         "./skills/jira-git-workflow",
         "./skills/pinia-store-design",
