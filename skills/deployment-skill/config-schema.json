@@ -6,7 +6,7 @@
   "properties": {
     "provider": {
       "type": "string",
-      "enum": ["apollo", "jenkins", "argocd"]
+      "enum": ["apollo", "jenkins", "argocd", "local"]
     },
     "defaultTarget": {
       "type": "string",
@@ -37,10 +37,19 @@
   },
   "additionalProperties": true,
   "$defs": {
+    "localEnvironment": {
+      "allOf": [
+        { "$ref": "#/$defs/environment" },
+        { "required": ["buildCommand", "outputDir", "archiveDir"] }
+      ]
+    },
     "environment": {
       "type": "object",
       "properties": {
         "envName": { "type": "string" },
+        "buildCommand": { "type": "string", "minLength": 1 },
+        "outputDir": { "type": "string", "minLength": 1 },
+        "archiveDir": { "type": "string", "minLength": 1 },
         "namespace": { "type": "string" },
         "trigger": { "type": "string", "enum": ["git-tag", "jenkins-build"] },
         "remote": { "type": "string" },

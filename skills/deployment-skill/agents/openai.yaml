@@ -1,4 +1,4 @@
 interface:
   display_name: "Deployment Skill"
-  short_description: "Deploy projects through provider-specific workflows."
-  default_prompt: "Deploy the current project using deploy.json and report the result."
+  short_description: "按项目配置部署、构建镜像或本地打包交付 ZIP。"
+  default_prompt: "根据 deploy.json 部署当前项目；本地打包时沿用部署 Tag 流程，生成 ZIP 并仅提供可点击的 ZIP 所在目录链接。"

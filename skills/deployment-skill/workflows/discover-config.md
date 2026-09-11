@@ -2,6 +2,8 @@
 
 Use when `deploy.json` is missing, the selected target is absent, or required provider fields are incomplete.
 
+本地打包（`provider: "local"`）先按 [../providers/local.md](../providers/local.md) 发现构建命令及目录，不执行远端平台认证或发现。写入后重新读取配置，继续 `build-and-package`。
+
 1. Determine the selected target first.
 2. Ask only for missing values that cannot be safely discovered.
 3. Before writing provider configuration, complete any provider authentication or authorization preflight that is possible with the discovered user-supplied locator, such as Jenkins `<jobUrl>/api/json` or Apollo login/session validation.
@@ -15,7 +17,7 @@ For TRS projects, a bare `部署`, `发布`, `build`, or `运行流水线` selec
 
 ## deploy.json Git Follow-Up
 
-Use only after a deployment or image update has succeeded. Never commit `deploy.json` after a failed or ambiguous deployment state.
+Use only after a deployment, local packaging, or image update has succeeded. Never commit `deploy.json` after a failed or ambiguous deployment state.
 
 1. Check whether project-root `deploy.json` is new or changed.
 2. If there is no `deploy.json` change, skip the Git follow-up silently unless reporting it would clarify a user-visible configuration action.

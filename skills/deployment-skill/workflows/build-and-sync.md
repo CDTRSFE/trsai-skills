@@ -2,6 +2,8 @@
 
 Use when the user asks to deploy or run the deployment pipeline.
 
+For `provider: "local"`, route to [build-and-package.md](build-and-package.md) before executing the steps below.
+
 1. Read `deploy.json` and select the target.
 2. Validate the selected target configuration for the provider.
 3. Complete the provider authentication or authorization preflight before any build, tag push, image creation, or image sync side effect.
