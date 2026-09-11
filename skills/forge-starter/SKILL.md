@@ -76,45 +76,48 @@ metadata:
 
 ## 创建及依赖安装
 
-- 推荐 Node.js `20.9.0+`；检查模板的 `engines` 和 `packageManager`，遵循其版本要求。
+- 使用 Node.js `20.19.0+`；检查生成模板的 `engines` 和 `packageManager`，遵循其版本要求。
 - 默认使用 `pnpm`，除非用户明确要求其他包管理器。
-- 根据工程类型执行下方的入口配置，并在结果中展示实际配置。当前模板的 PC 和大屏使用同一下载命令，大屏通过内置 `ScaleLayout` 组件启用，不是独立分支或命令参数。
+- 工程类型只影响内部模板选择：`1` / `大屏` → `screen`，`2` / `PC` → `pc`。沿用已收集的名称和路径，不新增用户提问，不改变成功结果格式。
+- 当前脚手架按 `templates/base` + `templates/pc` 或 `templates/screen` 生成工程。不要直接把整个仓库下载到用户目标目录当作业务工程。
 
-使用 `vite-tpl` 文档指定的命令，将 `<project-dir>` 替换为确定的目标路径，包含空格时正确引用：
+先用独立临时目录下载脚手架，再调用其中的生成器。下面的 `<template>` 替换为 `screen` 或 `pc`，`<project-dir>` 替换为已确定的绝对路径；包含空格时保留引号：
 
 ```shell
-npx degit CDTRSFE/vite-tpl <project-dir>
-cd <project-dir>
+template_tmp=$(mktemp -d "${TMPDIR:-/tmp}/forge-starter.XXXXXX")
+npx degit CDTRSFE/vite-tpl "$template_tmp/source"
+node "$template_tmp/source/scripts/create-project.mjs" --template <template> --target "<project-dir>"
+cd "<project-dir>"
 git init
 pnpm install
 ```
 
-依次执行并检查每步结果。**安装依赖是创建流程的默认必做步骤，不再要求用户自行执行 `pnpm i`。** 若用户明确要求跳过安装，则遵循该要求并在结果中注明。
+依次执行并检查每步结果；前一步失败不能继续下一步。调用前核实下载目录存在 `scripts/create-project.mjs`、`templates/base` 和所选模板目录。远程版本尚不包含生成器时，明确报告模板尚未发布更新；不要猜分支、创建参数或退回旧的混合模板，也不要擅自改用其他仓库。用户指定本地脚手架时，可以直接调用该本地生成器。
+
+生成器支持不存在的目录或已有空目录，非空目录拒绝覆盖。生成器不会初始化 Git 或安装依赖，技能继续执行这两步。生成后确认目标目录中的 `package.json`、`src/`、`AGENTS.md` 与所选类型一致；只清理本次自己创建的下载临时目录，不删除用户工程目录。
+
+**安装依赖是创建流程的默认必做步骤，不再要求用户自行执行 `pnpm i`。** 若用户明确要求跳过安装，则遵循该要求并在结果中注明。
 
 如果 `pnpm` 不可用，检查 Corepack 等可用方式，按模板要求准备并执行安装。依赖安装失败时，检查错误并修复可处理的问题后重试；仍无法完成则如实报告工程已生成但依赖安装失败、具体原因及下一步，不宣称工程已就绪。
 
 不默认启动常驻开发服务；完成后给出启动命令。
 
-## 按工程类型配置入口
+## 按工程类型选择模板
 
-已核查远程 `master` 提交 `3987fcc`：模板包含 `src/components/ScaleLayout.vue`，但默认 `src/App.vue` 未使用该组件；README、package.json 和 Vite 配置没有独立的大屏创建命令。后续远程模板若有变化，应检查实际文档与源码再调整，不能猜测 `--screen` 参数或大屏分支。
+| 已确定的工程类型 | 生成器参数 | 生成结果 |
+| --- | --- | --- |
+| `pc` | `--template pc` | Ant Design Vue、PC AGENTS 与 UI 规范，不包含 ScaleLayout 及其测试 |
+| `大屏` | `--template screen` | Naive UI、大屏 AGENTS 与 UI 规范，App.vue 已接入 ScaleLayout 和 Naive UI Provider |
 
-| 工程类型 | 下载后执行 |
-| --- | --- |
-| `pc` | 保留模板默认入口，不挂载 `ScaleLayout` |
-| `大屏` | 在 `src/App.vue` 引入并挂载现有 `ScaleLayout`，启用大屏画布缩放 |
+模板已经包含所选类型的入口、依赖、类型声明和文档，不要在生成后再手改为另一套 UI 库，不要重复包裹 ScaleLayout。
 
-大屏入口配置：
+大屏默认画布为 `1920×1080`、`fit="fill"`。用户指定其他尺寸或缩放方式时，仅调整生成工程 App.vue 中对应参数；`fill` 按宽高分别缩放，`contain` 等比缩放居中留边。组件缩放整个 body，只在应用根部挂载一次。
 
-1. 在 `src/App.vue` 的 `<script setup>` 中显式引入 `import ScaleLayout from './components/ScaleLayout.vue';`。
-2. 用 `<ScaleLayout :w="1920" :h="1080" fit="fill">` 包裹现有根模板内容。保留原有 `a-style-provider`、`a-config-provider`、路由、消息和弹窗上下文，不重写现有入口逻辑。
-3. 用户指定画布尺寸或缩放方式时采用其配置；否则沿用组件默认值 `1920×1080`、`fill`。`fill` 按宽高分别缩放以铺满窗口；`contain` 等比缩放并居中留边。
-4. 该组件缩放整个 `body`，在应用根部仅挂载一次；不要在每个页面重复挂载，也不要另造缩放组件。此步骤只启用大屏布局，不代表已生成业务看板。
-5. 安装依赖并配置入口后，执行模板提供的 `pnpm build` 验证可编译；失败时报告具体原因，不宣称大屏工程已就绪。
+安装依赖后，大屏按原流程执行生成工程的 `pnpm build`，确认模板可编译；构建失败如实报告，不宣称工程已就绪。模板只提供接入示例，不代表已生成业务看板。
 
 ## 完成验证和结果输出
 
-确认目标路径下存在 `package.json`、源码和模板配置，检查 Git 初始化结果，以及依赖安装命令是否成功退出。只有实际安装成功才写“依赖已安装”。大屏仍需实际接入组件并完成构建验证，不能仅修改输出中的工程类型。
+确认目标路径下存在 `package.json`、源码和模板配置，检查 Git 初始化结果，以及依赖安装命令是否成功退出。只有实际安装成功才写“依赖已安装”。大屏仍需确认生成入口已接入组件并完成构建验证，不能仅修改输出中的工程类型。
 
 全部成功时，最终回复按以下结构输出（替换类型、名称和绝对路径；外层围栏仅用于展示格式）：
 
@@ -148,7 +151,7 @@ pnpm dev
 
 ## 模板能力速查
 
-`vite-tpl` 包含 Vue 3、Vite、TypeScript、ant-design-vue、axios、pnpm、UnoCSS、Less、Pinia、VueUse、unplugin-vue-components、unplugin-auto-import、vite-plugin-import-icons、ESLint、Stylelint、Prettier、Vitest 和 @vue/test-utils。
+`vite-tpl` 的公共基础包含 Vue 3、Vite、TypeScript、axios、pnpm、UnoCSS、Less、Pinia、VueUse、unplugin-vue-components、vite-plugin-import-icons、ESLint、Stylelint、Prettier、Vitest、@vue/test-utils 和 Playwright。PC 使用 Ant Design Vue，大屏使用 Naive UI；依赖和开发规范随类型分别生成。Vue、Vue Router 和 VueUse 的 API 显式导入。
 
 ## 常见错误
 
@@ -156,8 +159,8 @@ pnpm dev
 | --- | --- |
 | 用户只说“创建新工程”就开始后续流程 | 先展示类型选项（1. 大屏；2. PC），等待数字或类型名称回复后再继续 |
 | 未指定工程名时根据业务自行命名 | 默认使用 `my-project` |
-| 创建命令写成 npm create vite | 使用 `npx degit CDTRSFE/vite-tpl <project-dir>` |
-| 选择大屏后仍保留未启用缩放的默认入口 | 在 `App.vue` 根部挂载内置 `ScaleLayout` 并验证构建 |
+| 创建时把整仓直接下载到用户工程目录 | 下载到临时目录，再调用 `create-project.mjs --template pc` 或 `--template screen` 生成 |
+| 选择大屏后仍使用 PC 文件或重复包裹入口 | 使用 screen 模板已有的 Naive UI 与 ScaleLayout 入口并验证构建 |
 | 创建后只提示用户执行 `pnpm i` | 自动安装依赖并核实结果 |
 | 安装失败仍报告工程就绪 | 分别报告生成状态与依赖安装状态 |
 | 目标目录非空仍覆盖 | 停止并询问用户 |
