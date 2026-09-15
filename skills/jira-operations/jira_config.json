@@ -1,0 +1,26 @@
+{
+  "_note_default_source": "没人指定源时的退路。每次调用建议显式写 --source",
+  "default_source": "Jira2",
+  "sources": [
+    {
+      "name": "Jira1",
+      "base_url": "https://jira.trscd.com.cn",
+      "username": "",
+      "password": "",
+      "insecure": true,
+      "routing_business_tag": "非涉密",
+      "routing_business_desc": "对外协作与非涉密业务的 Jira 源",
+      "routing_project_keys": ["TRS", "XJRB", "XMKFB"]
+    },
+    {
+      "name": "Jira2",
+      "base_url": "http://10.18.20.137:8082",
+      "username": "",
+      "password": "",
+      "insecure": false,
+      "routing_business_tag": "涉密",
+      "routing_business_desc": "内部研发与涉密业务的 Jira 源（内部俗称，不代表法定密级）",
+      "routing_project_keys": ["XMKFB"]
+    }
+  ]
+}

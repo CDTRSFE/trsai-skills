@@ -24,6 +24,7 @@
         "./skills/trs-apollo-bootstrap-project",
         "./skills/deployment-skill",
         "./skills/jira-git-workflow",
+        "./skills/jira-operations",
         "./skills/pinia-store-design",
         "./skills/vue-component-design",
         "./skills/trs-code-review"

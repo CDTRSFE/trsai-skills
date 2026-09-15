@@ -1,3 +1,6 @@
 .DS_Store
 CLAUDE.local.md
 docs/前端ui设计思路.zip
+__pycache__/
+*.pyc
+skills/*/state/
