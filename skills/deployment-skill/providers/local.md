@@ -12,7 +12,7 @@
 
 - `buildCommand`：在项目根目录执行的构建命令，必须与目标环境相符。
 - `outputDir`：构建产物目录，相对于项目根目录。
-- `archiveDir`：ZIP 保存目录，相对于项目根目录；首次配置默认 `artifacts`，必须位于 `outputDir` 外。
+- `archiveDir`：ZIP 保存目录，相对于项目根目录；首次配置默认 `./`（项目根目录，ZIP 通常已被 `.gitignore` 忽略），必须位于 `outputDir` 外。
 - `remote`：可选，沿用已有 Git remote；Tag 规则交给 `git-tag-release`，不写入本配置。
 
 示例（命令和目录须按真实项目发现）：
@@ -25,7 +25,7 @@
     "dev": {
       "buildCommand": "pnpm build",
       "outputDir": "dist",
-      "archiveDir": "artifacts"
+      "archiveDir": "./"
     }
   }
 }
